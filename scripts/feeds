@@ -7,6 +7,7 @@ use metadata;
 use warnings;
 use strict;
 use Cwd 'abs_path';
+use File::Basename;
 
 chdir "$FindBin::Bin/..";
 $ENV{TOPDIR} //= getcwd();
@@ -196,12 +197,13 @@ my %update_method = (
 # src-git: pull broken
 # src-cpy: broken if `basename $src` != $name
 
-sub update_feed_via($$$$$) {
+sub update_feed_via($$$$$$) {
 	my $type = shift;
 	my $name = shift;
 	my $src = shift;
 	my $relocate = shift;
 	my $force = shift;
+	my $rewrite_urls = shift;
 
 	my $m = $update_method{$type};
 	my $localpath = "./feeds/$name";
@@ -209,6 +211,18 @@ sub update_feed_via($$$$$) {
 	$safepath =~ s/'/'\\''/;
 	my ($base_branch, $branch) = split(/;/, $src, 2);
 	my ($base_commit, $commit) = split(/\^/, $src, 2);
+
+	# If this is an inteno repo and we are cloning as a developer
+	# rewrite the url to clone using ssh instead of http
+	if ( $rewrite_urls ) {
+		my $repo = basename($base_commit);
+		my $url = dirname($base_commit);
+
+		if( $url eq "http://public.inteno.se" ) {
+			$base_commit = 'git@public.inteno.se:' . $repo;
+			printf "Rewriting url to clone with ssh $base_commit\n";
+		}
+	}
 
 	# kenjo was here and killed the relocate stuff. now we have to manually rm -rf feeds in case of rename or remove of feed.
 	#	if( $relocate || !$m->{'update'} || !-d "$localpath/$m->{'controldir'}" ) {
@@ -757,15 +771,19 @@ sub uninstall {
 	return 0;
 }
 
-sub update_feed($$$$$)
+sub update_feed($$$$$$)
 {
 	my $type=shift;
 	my $name=shift;
 	my $src=shift;
 	my $perform_update=shift;
 	my $force_update=shift;
+	my $rewrite_urls=shift;
 	my $force_relocate=update_location( $name, "@$src" );
 	my $rv=0;
+	my $skip=0;
+
+	my $feed_commit=`git -C feeds/$name rev-parse HEAD`;
 
 	if( $force_relocate ) {
 		warn "Source of feed $name has changed, replacing copy\n";
@@ -777,8 +795,25 @@ sub update_feed($$$$$)
 	$perform_update and do {
 		my $failed = 1;
 		foreach my $feedsrc (@$src) {
+
+		    if (index($feedsrc, "^") != -1) {
+
+				# Feed points to a commit
+				my ($base_commit, $commit) = split(/\^/, $feedsrc, 2);
+				chomp($feed_commit);
+				chomp($commit);
+
+				if ( $feed_commit eq $commit ) {
+					# HEAD points to same commit as in feeds.conf
+					print "Feed $name is up to date with feeds.conf: $commit\n";
+					$failed = 0;
+					$skip = 1;
+					next;
+				}
+		    }
+
 			warn "Updating feed '$name' from '$feedsrc' ...\n";
-			if (update_feed_via($type, $name, $feedsrc, $force_relocate, $force_update) != 0) {
+			if (update_feed_via($type, $name, $feedsrc, $force_relocate, $force_update, $rewrite_urls) != 0) {
 				if ($force_update) {
 					$rv=1;
 					$failed=0;
@@ -794,11 +829,14 @@ sub update_feed($$$$$)
 			return 1;
 		};
 	};
-	warn "Create index file './feeds/$name.index' \n";
-	update_index($name) == 0 or do {
-		warn "failed.\n";
-		return 1;
-	};
+
+	if ($skip == 0) {
+		warn "Create index file './feeds/$name.index' \n";
+		update_index($name) == 0 or do {
+			warn "failed.\n";
+			return 1;
+		};
+	}
 	return $rv;
 }
 
@@ -806,12 +844,13 @@ sub update {
 	my %opts;
 	my $feed_name;
 	my $perform_update=1;
+	my $rewrite_urls=0;
 	my $failed=0;
 
 	$ENV{SCAN_COOKIE} = $$;
 	$ENV{OPENWRT_VERBOSE} = 's';
 
-	getopts('ahif', \%opts);
+	getopts('ahifg', \%opts);
 
 	if ($opts{h}) {
 		usage();
@@ -824,6 +863,11 @@ sub update {
 		$perform_update=0;
 	}
 
+	if ($opts{g}) {
+	    # clone with ssh instead of http for inteno url:s
+	    $rewrite_urls=1;
+	}
+
 	-d "feeds" or do {
 			mkdir "feeds" or die "Unable to create the feeds directory";
 		};
@@ -831,7 +875,7 @@ sub update {
 	if ( ($#ARGV == -1) or $opts{a}) {
 		foreach my $feed (@feeds) {
 			my ($type, $name, $src) = @$feed;
-			update_feed($type, $name, $src, $perform_update, $opts{f}) == 0 or $failed=1;
+			update_feed($type, $name, $src, $perform_update, $opts{f}, $rewrite_urls) == 0 or $failed=1;
 		}
 	} else {
 		while ($feed_name = shift @ARGV) {
@@ -840,7 +884,7 @@ sub update {
 				if($feed_name ne $name) {
 					next;
 				}
-				update_feed($type, $name, $src, $perform_update, $opts{f}) == 0 or $failed=1;
+				update_feed($type, $name, $src, $perform_update, $opts{f}, $rewrite_urls) == 0 or $failed=1;
 			}
 		}
 	}
@@ -900,6 +944,7 @@ Commands:
 	    -a :           Update all feeds listed within feeds.conf. Otherwise the specified feeds will be updated.
 	    -i :           Recreate the index only. No feed update from repository is performed.
 	    -f :           Force updating feeds even if there are changed, uncommitted files.
+	    -g :           Rewrite feed URLs to clone feeds with ssh instead of http
 
 	clean:             Remove downloaded/generated files.
 
