@@ -203,9 +203,8 @@ define DownloadMethod/rawgit
 	cd $(TMP_DIR)/dl && \
 	rm -rf $(SUBDIR) && \
 	[ \! -d $(SUBDIR) ] && \
-	git clone $(OPTS) $(URL) $(SUBDIR) && \
-	(cd $(SUBDIR) && git checkout $(VERSION) && \
-	git submodule update --init --recursive) && \
+	$(SCRIPT_DIR)/git_clone.sh $(URL) $(SUBDIR)  $(CONFIG_GITMIRROR) $(VERSION) $(CONFIG_GITMIRROR_REWRITE) && \
+	(cd $(SUBDIR) && git checkout $(VERSION) && git submodule update --init --recursive) && \
 	echo "Packing checkout..." && \
 	export TAR_TIMESTAMP=`cd $(SUBDIR) && git log -1 --format='@%ct'` && \
 	$(call dl_tar_pack,$(TMP_DIR)/dl/$(FILE),$(SUBDIR)) && \
