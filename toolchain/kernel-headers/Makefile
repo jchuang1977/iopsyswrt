@@ -80,12 +80,20 @@ define Host/Prepare
 	$(SED) 's/@expr length/@-expr length/' $(HOST_BUILD_DIR)/Makefile
 endef
 
-define Host/Configure
+ifeq ($(CONFIG_TARGET_iopsys_brcm63xx_arm)$(CONFIG_TARGET_iopsys_brcm63xx_mips),)
+ define Host/Configure
 	env
 	yes '' | $(KMAKE) oldconfig
 	$(call Host/Configure/all)
 	$(call Host/Configure/post/$(ARCH))
-endef
+ endef
+else
+ define Host/Configure
+	$(KMAKE) defconfig
+	$(call Host/Configure/all)
+	$(call Host/Configure/post/$(ARCH))
+ endef
+endif
 
 define Host/Compile
 endef
