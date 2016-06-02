@@ -13,6 +13,7 @@
 /feeds
 /feeds.conf
 /files
+/themes
 /overlay
 /package/feeds
 /package/openwrt-packages
@@ -28,3 +29,14 @@ TAGS*~
 git-src
 .project
 .cproject
+.genconfig_config_bak
+.current_config_file
+.genconfig.config
+customerconfigs/
+target/linux/iopsys-brcm63xx-arm
+target/linux/iopsys-brcm63xx-mips
+target/linux/iopsys-ramips
+target/linux/iopsys-grx
+target/linux/intel_mips
+
+
