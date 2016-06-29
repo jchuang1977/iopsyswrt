@@ -12,6 +12,10 @@ menuconfig DEVEL
 		bool "Show broken platforms / packages" if DEVEL
 		default n
 
+	config GITMIRROR_REWRITE
+		bool "Use git protocol for git in packages instead of http" if DEVEL
+		default n
+
 	config BINARY_FOLDER
 		string "Binary folder" if DEVEL
 		default ""
