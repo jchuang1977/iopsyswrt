@@ -104,6 +104,8 @@ ifeq ($(strip $(CONFIG_KERNEL_HTTP_WGET_URI)),"")
 	cd $(LINUX_DIR) && git checkout $(CONFIG_KERNEL_GIT_COMMIT); \
 	fi
 else
+	rm -rf $(KERNEL_BUILD_DIR);
+	mkdir -p $(KERNEL_BUILD_DIR);
 	wget $(CONFIG_KERNEL_HTTP_WGET_URI)-$(CONFIG_KERNEL_GIT_COMMIT).tar.gz -P $(DL_DIR)
 	$(TAR) xvfz $(DL_DIR)/`basename $(CONFIG_KERNEL_HTTP_WGET_URI)-$(CONFIG_KERNEL_GIT_COMMIT).tar.gz` \
 	-C $(KERNEL_BUILD_DIR)
