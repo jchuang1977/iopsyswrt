@@ -1,6 +1,6 @@
 ifneq ($(CONFIG_TARGET_ROOTFS_UBIFS),)
     define Image/mkfs/ubifs/generate
-	$(CP) ./ubinize$(1).cfg $(KDIR)
+	cp -f ./ubinize$(1).cfg $(KDIR)
 	( cd $(KDIR); \
 		$(STAGING_DIR_HOST)/bin/ubinize \
 		$(if $($(PROFILE)_UBI_OPTS),$($(PROFILE)_UBI_OPTS),$(shell echo $(UBI_OPTS))) \
