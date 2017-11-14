@@ -158,6 +158,7 @@ my %update_method = (
 		'init'          => "git clone --depth 1 '%s' '%s'",
 		'init_branch'   => "git clone --depth 1 --branch '%s' '%s' '%s'",
 		'init_commit'   => "git clone '%s' '%s' && cd '%s' && git checkout '%s' && cd -",
+		'checkout_commit'=> "cd '%s' && git remote update && git checkout '%s'",
 		'update'	=> "git pull --ff",
 		'update_force'	=> "git pull --ff || (git reset --hard HEAD; git pull --ff; exit 1)",
 		'post_update'	=> "git submodule update --init --recursive",
@@ -167,6 +168,7 @@ my %update_method = (
 		'init'          => "git clone '%s' '%s'",
 		'init_branch'   => "git clone --branch '%s' '%s' '%s'",
 		'init_commit'   => "git clone '%s' '%s' && cd '%s' && git checkout '%s' && cd -",
+		'checkout_commit'=> "cd '%s' && git remote update && git checkout '%s'",
 		'update'	=> "git pull --ff",
 		'update_force'	=> "git pull --ff || (git reset --hard HEAD; git pull --ff; exit 1)",
 		'post_update'	=> "git submodule update --init --recursive",
@@ -208,7 +210,9 @@ sub update_feed_via($$$$$) {
 	my ($base_branch, $branch) = split(/;/, $src, 2);
 	my ($base_commit, $commit) = split(/\^/, $src, 2);
 
-	if( $relocate || !$m->{'update'} || !-d "$localpath/$m->{'controldir'}" ) {
+	# kenjo was here and killed the relocate stuff. now we have to manually rm -rf feeds in case of rename or remove of feed.
+	#	if( $relocate || !$m->{'update'} || !-d "$localpath/$m->{'controldir'}" ) {
+	if( !$m->{'update'} || !-d "$localpath/$m->{'controldir'}" ) {
 		system("rm -rf '$safepath'");
 		if ($m->{'init_branch'} and $branch) {
 			system(sprintf($m->{'init_branch'}, $branch, $base_branch, $safepath)) == 0 or return 1;
@@ -217,8 +221,8 @@ sub update_feed_via($$$$$) {
 		} else {
 			system(sprintf($m->{'init'}, $src, $safepath)) == 0 or return 1;
 		}
-	} elsif ($m->{'init_commit'} and $commit) {
-		# in case git hash has been provided don't update the feed
+	} elsif ($m->{'checkout_commit'} and $commit) {
+		system(sprintf($m->{'checkout_commit'}, $safepath, $commit)) == 0 or return 1;
 	} else {
 		my $update_cmd = $m->{'update'};
 		if ($force && exists $m->{'update_force'}) {
