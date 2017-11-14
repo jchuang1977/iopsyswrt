@@ -113,6 +113,7 @@ include $(INCLUDE_DIR)/package-dumpinfo.mk
 include $(INCLUDE_DIR)/package-ipkg.mk
 include $(INCLUDE_DIR)/package-bin.mk
 include $(INCLUDE_DIR)/autotools.mk
+include $(INCLUDE_DIR)/iopsys.mk
 
 _pkg_target:=$(if $(QUILT),,.)
 
