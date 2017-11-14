@@ -347,6 +347,12 @@ EOF
 			print "\t\tdefault \"$subtarget\" if TARGET_".$target->{conf}."_$subtarget\n";
 		}
 	}
+
+	foreach my $target (@target) {
+		next if @{$target->{subtargets}} > 0;
+		print $target->{config};
+	}
+
 	print <<EOF;
 config TARGET_PROFILE
 	string

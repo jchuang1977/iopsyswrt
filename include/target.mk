@@ -275,6 +275,7 @@ endif
 define BuildTargets/DumpCurrent
   .PHONY: dumpinfo
   dumpinfo : export DESCRIPTION=$$(Target/Description)
+  dumpinfo : export CONFIGURATION=$$(Target/Config)
   dumpinfo:
 	@echo 'Target: $(TARGETID)'; \
 	 echo 'Target-Board: $(BOARD)'; \
@@ -292,6 +293,9 @@ define BuildTargets/DumpCurrent
 	$(if $(SUBTARGET),,$(if $(DEFAULT_SUBTARGET), echo 'Default-Subtarget: $(DEFAULT_SUBTARGET)'; )) \
 	 echo 'Target-Description:'; \
 	 echo "$$$$DESCRIPTION"; \
+	 echo '@@'; \
+	 echo 'Target-Config:'; \
+	 echo "$$$$CONFIGURATION"; \
 	 echo '@@'; \
 	 echo 'Default-Packages: $(DEFAULT_PACKAGES) $(call extra_packages,$(DEFAULT_PACKAGES))'; \
 	 $(DUMPINFO)
