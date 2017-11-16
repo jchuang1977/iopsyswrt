@@ -63,8 +63,12 @@ ifneq ($(CONFIG_mips)$(CONFIG_mipsel),)
 	$(CP) \
 		$(HOST_BUILD_DIR)/arch/mips/include/asm/asm.h \
 		$(HOST_BUILD_DIR)/arch/mips/include/asm/regdef.h \
-		$(HOST_BUILD_DIR)/arch/mips/include/asm/asm-eva.h \
 		$(BUILD_DIR_TOOLCHAIN)/linux-dev/include/asm/
+	if [ -f	$(HOST_BUILD_DIR)/arch/mips/include/asm/asm-eva.h ]; then \
+		$(CP) $(HOST_BUILD_DIR)/arch/mips/include/asm/asm-eva.h \
+		$(BUILD_DIR_TOOLCHAIN)/linux-dev/include/asm/; \
+	fi
+
   endef
 endif
 
