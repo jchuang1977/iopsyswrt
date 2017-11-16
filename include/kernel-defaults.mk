@@ -36,7 +36,7 @@ ifeq ($(strip $(CONFIG_EXTERNAL_KERNEL_TREE)),"")
     endef
   else
     define Kernel/Prepare/Default
-	$(LINUX_CAT) $(DL_DIR)/$(LINUX_SOURCE) | $(TAR) -C $(KERNEL_BUILD_DIR) $(TAR_OPTIONS)
+	git clone $(KERNEL_GIT_OPTS) $(CONFIG_KERNEL_GIT_CLONE_URI) $(LINUX_DIR)
     endef
   endif
 else
