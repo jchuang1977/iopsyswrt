@@ -62,7 +62,7 @@ else
   ifneq (,$(findstring -rc,$(LINUX_VERSION)))
       LINUX_SOURCE:=linux-$(LINUX_VERSION).tar.gz
   else
-      LINUX_SOURCE:=linux-$(LINUX_VERSION).tar.xz
+      LINUX_SOURCE:=linux-$(LINUX_VERSION).tar.gz
   endif
 
   ifneq (,$(findstring -rc,$(LINUX_VERSION)))
