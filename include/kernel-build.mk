@@ -86,8 +86,9 @@ endif
 define BuildKernel
   $(if $(QUILT),$(Build/Quilt))
   $(if $(LINUX_SITE),$(call Download,kernel))
+ifeq ($(strip $(CONFIG_KERNEL_HTTP_WGET_URI)),"")
   $(if $(call qstrip,$(CONFIG_KERNEL_GIT_CLONE_URI)),$(call Download,git-kernel))
-
+endif
   .NOTPARALLEL:
 
 ifneq ($(strip $(CONFIG_KERNEL_GIT_COMMIT)),"")
