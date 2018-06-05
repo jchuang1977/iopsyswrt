@@ -1,0 +1,37 @@
+From 650853080de5e968d51b450dac967299b05ad66e Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Jonas=20H=C3=B6glund?= <jonas.hoglund@embeddednation.com>
+Date: Mon, 11 Nov 2019 15:21:38 +0100
+Subject: [PATCH] Fix curl_easy_reset_no_auth.
+
+This fixes the compilation issue; not sure if it actually works...
+---
+ lib/easy.c | 13 ++++++++++---
+ 1 file changed, 10 insertions(+), 3 deletions(-)
+
+diff --git a/lib/easy.c b/lib/easy.c
+index eb645d0..a9df74d 100644
+--- a/lib/easy.c
++++ b/lib/easy.c
+@@ -912,9 +912,16 @@ struct Curl_easy *curl_easy_duphandle(struct Curl_easy *data)
+  */
+ void curl_easy_reset_no_auth(struct Curl_easy *data)
+ {
+-  Curl_safefree(data->state.pathbuffer);
+-
+-  data->state.path = NULL;
++  Curl_safefree(data->state.buffer);
++
++  data->state.up.scheme = NULL;
++  data->state.up.hostname = NULL;
++  data->state.up.port = NULL;
++  data->state.up.user = NULL;
++  data->state.up.password = NULL;
++  data->state.up.options = NULL;
++  data->state.up.path = NULL;
++  data->state.up.query = NULL;
+ 
+   Curl_free_request_state(data);
+ 
+-- 
+2.7.4
+
