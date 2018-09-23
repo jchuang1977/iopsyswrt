@@ -212,14 +212,14 @@ sub update_feed_via($$$$$$) {
 	my ($base_branch, $branch) = split(/;/, $src, 2);
 	my ($base_commit, $commit) = split(/\^/, $src, 2);
 
-	# If this is an inteno repo and we are cloning as a developer
+	# If this is an iopsys repo and we are cloning as a developer
 	# rewrite the url to clone using ssh instead of http
 	if ( $rewrite_urls ) {
 		my $repo = basename($base_commit);
 		my $url = dirname($base_commit);
 
-		if( $url eq "http://public.inteno.se" ) {
-			$base_commit = 'git@public.inteno.se:' . $repo;
+		if( $url eq "https://dev.iopsys.eu/feed" ) {
+			$base_commit = 'git@dev.iopsys.eu:feed/' . $repo;
 			printf "Rewriting url to clone with ssh $base_commit\n";
 		}
 	}
@@ -864,7 +864,7 @@ sub update {
 	}
 
 	if ($opts{g}) {
-	    # clone with ssh instead of http for inteno url:s
+	    # clone with ssh instead of http for iopsys urls
 	    $rewrite_urls=1;
 	}
 
