@@ -327,6 +327,7 @@ target-dir-%: FORCE
 	-$(CP) -T $(mkfs_cur_target_dir).opkg/ $(mkfs_cur_target_dir)/etc/opkg/
 	rm -rf $(mkfs_cur_target_dir).opkg $(mkfs_cur_target_dir).conf
 	$(call prepare_rootfs,$(mkfs_cur_target_dir),$(TOPDIR)/files)
+	$(if $(ROOTFS_PREPARE),$(call Image/Prepare/$(ROOTFS_PREPARE),$(mkfs_cur_target_dir)))
 
 $(KDIR)/root.%: kernel_prepare
 	$(call Image/mkfs/$(word 1,$(target_params)),$(target_params))
@@ -383,6 +384,8 @@ define Device/Init
   IMAGE_METADATA :=
 
   FILESYSTEMS := $(TARGET_FILESYSTEMS)
+
+  ROOTFS_PREPARE :=
 
   UBOOT_PATH :=  $(STAGING_DIR_IMAGE)/uboot-$(1)
 
