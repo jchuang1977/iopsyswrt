@@ -784,6 +784,7 @@ sub update_feed($$$$$$)
 	my $skip=0;
 
 	my $feed_commit=`git -C feeds/$name rev-parse HEAD`;
+	my $developer=`git remote -v | grep git@`;
 
 	if( $force_relocate ) {
 		warn "Source of feed $name has changed, replacing copy\n";
@@ -798,6 +799,16 @@ sub update_feed($$$$$$)
 
 		    if (index($feedsrc, "^") != -1) {
 
+				# Skip repos with git@ url:s if user
+				# does not have developer access.
+			if ( ! $developer ) {
+				my ($git,$rest) = split(/\@/, $feedsrc, 2);
+				chomp($git);
+				if ( $git eq "git" ) {
+				    warn "Skipping private repo.\n";
+				    next;
+				}
+			}
 				# Feed points to a commit
 				my ($base_commit, $commit) = split(/\^/, $feedsrc, 2);
 				chomp($feed_commit);
@@ -811,7 +822,6 @@ sub update_feed($$$$$$)
 					next;
 				}
 		    }
-
 			warn "Updating feed '$name' from '$feedsrc' ...\n";
 			if (update_feed_via($type, $name, $feedsrc, $force_relocate, $force_update, $rewrite_urls) != 0) {
 				if ($force_update) {
