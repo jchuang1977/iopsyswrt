@@ -1,0 +1,54 @@
+--- a/extensions/rtsp/nf_conntrack_rtsp.c
++++ b/extensions/rtsp/nf_conntrack_rtsp.c
+@@ -41,6 +41,7 @@
+ #include <net/tcp.h>
+ 
+ #include <net/netfilter/nf_conntrack.h>
++#include <net/netfilter/nf_conntrack_core.h>
+ #include <net/netfilter/nf_conntrack_expect.h>
+ #include <net/netfilter/nf_conntrack_helper.h>
+ #include "nf_conntrack_rtsp.h"
+@@ -262,6 +263,18 @@ rtsp_parse_transport(char* ptran, uint t
+ 	return rc;
+ }
+ 
++static void set_child_ct_timeout(struct nf_conn *ct, struct sk_buff *skb, int timeout)
++{
++	struct nf_conn *child;
++
++	ct->child_timeout = timeout;
++
++	spin_lock_bh(&nf_conntrack_expect_lock);
++	list_for_each_entry(child, &ct->derived_connections, derived_list) {
++		nf_ct_refresh(child, skb, timeout*HZ);
++	}
++	spin_unlock_bh(&nf_conntrack_expect_lock);
++}
+ 
+ /*** conntrack functions ***/
+ 
+@@ -312,10 +325,20 @@ help_out(struct sk_buff *skb, unsigned c
+ 					&transoff, &translen))
+ 			break;      /* not a valid message */
+ 
+-		if (strncmp(pdata+cmdoff, "TEARDOWN ", 9) == 0) {
+-			pr_debug("teardown handled\n");
+-			nf_ct_remove_expectations(ct); /* FIXME must be session id aware */
+-			break;
++		if(memcmp(pdata+cmdoff, "PAUSE ", 6) == 0) {
++			pr_debug("nf_ct_rtsp: Pause\n");
++			set_child_ct_timeout(ct, skb, 3600);
++			continue;
++		}
++		else if (memcmp(pdata+cmdoff, "PLAY ", 5) == 0) {
++			pr_debug("nf_ct_rtsp: Play\n");
++			set_child_ct_timeout(ct, skb, 60);
++			continue;
++		}
++		else if (strncmp(pdata+cmdoff, "TEARDOWN ", 9) == 0) {
++			pr_debug("nf_ct_rtsp: Teardown\n");
++			set_child_ct_timeout(ct, skb, 5);
++			continue;
+ 		}
+ 
+ 		if (strncmp(pdata+cmdoff, "SETUP ", 6) != 0)
