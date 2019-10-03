@@ -28,6 +28,9 @@ include $(INCLUDE_DIR)/package.mk
 ifeq ($(DUMP),)
   -include $(LINUX_DIR)/.config
   include $(INCLUDE_DIR)/netfilter.mk
+$(eval $(call nf_add,IPT_IPOPT,CONFIG_NETFILTER_XT_MATCH_EXTMARK, $(P_XT)xt_extmark))
+$(eval $(if $(NF_KMOD),$(call nf_add,IPT_IPOPT,CONFIG_NETFILTER_XT_TARGET_EXTMARK, $(P_XT)xt_extmark)))
+$(eval $(if $(NF_KMOD),,$(call nf_add,IPT_IPOPT,CONFIG_NETFILTER_XT_TARGET_EXTMARK, $(P_XT)xt_EXTMARK)))
   STAMP_CONFIGURED:=$(strip $(STAMP_CONFIGURED))_$(shell grep 'NETFILTER' $(LINUX_DIR)/.config | mkhash md5)
 endif
 
@@ -534,6 +537,23 @@ define Package/libxtables-nft
  DEPENDS:=libxtables
 endef
 
+define KernelPackage/intel-iptables
+ TITLE:=Intel Iptables
+ SUBMENU:=Intel
+ DEPENDS:=+kmod-nf-ipt
+ KCONFIG:= \
+	CONFIG_NETFILTER_XT_EXTMARK=m \
+	CONFIG_NETFILTER_XT_MATCH_EXTMARK=m \
+	CONFIG_NETFILTER_XT_TARGET_EXTMARK=m
+ FILES:= \
+	$(LINUX_DIR)/net/netfilter/xt_extmark.ko
+ AUTOLOAD:=$(call AutoProbe,xt_extmark)
+endef
+
+define KernelPackage/intel-iptables/description
+ Extension mark support in iptables
+endef
+
 TARGET_CPPFLAGS := \
 	-I$(PKG_BUILD_DIR)/include \
 	-I$(LINUX_DIR)/user_headers/include \
@@ -704,3 +724,5 @@ $(eval $(call BuildPackage,libip4tc))
 $(eval $(call BuildPackage,libip6tc))
 $(eval $(call BuildPackage,libxtables))
 $(eval $(call BuildPackage,libxtables-nft))
+$(eval $(call KernelPackage,intel-iptables))
+
