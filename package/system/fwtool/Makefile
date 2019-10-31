@@ -14,6 +14,7 @@ PKG_FLAGS:=nonshared
 
 PKG_MAINTAINER := Felix Fietkau <nbd@nbd.name>
 PKG_BUILD_DEPENDS := fwtool/host
+PKG_LICENSE:=GPL-2.0-only
 
 include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/host-build.mk
