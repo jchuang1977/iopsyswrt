@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=usbreset
 PKG_RELEASE:=5
-
+PKG_LICENSE:=NONE
 include $(INCLUDE_DIR)/package.mk
 
 define Package/usbreset
