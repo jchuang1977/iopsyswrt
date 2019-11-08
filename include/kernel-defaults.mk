@@ -37,7 +37,8 @@ ifeq ($(strip $(CONFIG_EXTERNAL_KERNEL_TREE)),"")
   else
 ifeq ($(strip $(CONFIG_KERNEL_HTTP_WGET_URI)),"")
     define Kernel/Prepare/Default
-	git clone $(KERNEL_GIT_OPTS) $(CONFIG_KERNEL_GIT_CLONE_URI) $(LINUX_DIR)
+	git clone $(KERNEL_GIT_OPTS) $(CONFIG_KERNEL_GIT_CLONE_URI) $(LINUX_DIR) \
+	--branch $(CONFIG_KERNEL_GIT_BRANCH)
     endef
 else
     define Kernel/Prepare/Default
