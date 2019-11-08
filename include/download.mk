@@ -208,7 +208,6 @@ define DownloadMethod/rawgit
 	git submodule update --init --recursive) && \
 	echo "Packing checkout..." && \
 	export TAR_TIMESTAMP=`cd $(SUBDIR) && git log -1 --format='@%ct'` && \
-	rm -rf $(SUBDIR)/.git && \
 	$(call dl_tar_pack,$(TMP_DIR)/dl/$(FILE),$(SUBDIR)) && \
 	mv $(TMP_DIR)/dl/$(FILE) $(DL_DIR)/ && \
 	rm -rf $(SUBDIR);
