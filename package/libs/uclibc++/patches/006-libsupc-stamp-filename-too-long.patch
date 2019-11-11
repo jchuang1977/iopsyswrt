@@ -1,0 +1,25 @@
+From 6999eced83aecf5b3224298939d3460f9df956e6 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Jonas=20H=C3=B6glund?= <jonas.hoglund@embeddednation.com>
+Date: Mon, 11 Nov 2019 14:31:05 +0100
+Subject: [PATCH] libsupc: stamp filename too long
+
+---
+ src/abi/libsupc/Makefile.in | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/abi/libsupc/Makefile.in b/src/abi/libsupc/Makefile.in
+index 89e0e8a..77a117a 100644
+--- a/src/abi/libsupc/Makefile.in
++++ b/src/abi/libsupc/Makefile.in
+@@ -5,7 +5,7 @@ OBJS-OMIT = $(filter new_op%.o del_op%.o pure.o new_handler.o eh_alloc.o eh_glob
+ libsupc-$(IMPORT_LIBSUP) := $(filter-out $(OBJS-OMIT),$(OBJS))
+ 
+ LIBSUP_VAR := $(call variablify,$(LIBSUP))
+-LIBSUP_DEP :=$(LIBSUPC_OUT).$(LIBSUP_VAR).dep
++LIBSUP_DEP :=$(LIBSUPC_OUT).libsup.dep
+ 
+ ifeq ($(filter $(noconfig_targets),$(MAKECMDGOALS)),)
+ -include $(LIBSUP_DEP)
+-- 
+2.7.4
+
