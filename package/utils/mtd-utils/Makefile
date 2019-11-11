@@ -71,7 +71,7 @@ define Package/ubi-utils/install
 	$(INSTALL_BIN) \
 		$(PKG_INSTALL_DIR)/usr/sbin/{ubiattach,ubicrc32,ubiblock,ubidetach,ubiformat,ubimkvol} $(1)/usr/sbin/
 	$(INSTALL_BIN) \
-		$(PKG_INSTALL_DIR)/usr/sbin/{ubinfo,ubinize,ubirename,ubirmvol,ubirsvol,ubiupdatevol} $(1)/usr/sbin/
+		$(PKG_INSTALL_DIR)/usr/sbin/{ubinfo,ubinize,deubinize,ubirename,ubirmvol,ubirsvol,ubiupdatevol} $(1)/usr/sbin/
 endef
 
 define Package/nand-utils/install
