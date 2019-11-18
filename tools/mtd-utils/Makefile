@@ -32,7 +32,6 @@ HOST_CONFIGURE_VARS+= \
 
 HOST_CONFIGURE_ARGS+= \
 	--disable-tests \
-	--without-crypto \
 	--without-xattr \
 	--without-zstd \
 	--without-lzo
