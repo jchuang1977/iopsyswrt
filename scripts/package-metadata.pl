@@ -392,6 +392,7 @@ sub gen_package_mk() {
 	my $line;
 
 	parse_package_metadata($ARGV[0]) or exit 1;
+	my $mode =  $ARGV[1];
 	foreach my $srcname (sort {uc($a) cmp uc($b)} keys %srcpackage) {
 		my $src = $srcpackage{$srcname};
 		my $variant_default;
@@ -411,7 +412,7 @@ sub gen_package_mk() {
 
 				my $vpkg_dep = $vpackage{$dep};
 				unless (defined $vpkg_dep) {
-					if (not $dep =~ /^kmod-/ ) {
+					if (not ($mode eq "skip-kmods" and $dep =~ /^kmod-/)) {
 						warn sprintf "WARNING: Makefile '%s' has a dependency on '%s', which does not exist\n",
 						$src->{makefile}, $dep;
 					}

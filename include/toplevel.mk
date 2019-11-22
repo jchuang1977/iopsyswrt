@@ -43,6 +43,7 @@ unexport LPATH
 # make sure that a predefined CFLAGS variable does not disturb packages
 export CFLAGS=
 export LDFLAGS=
+-include $(TOPDIR)/.config
 
 empty:=
 space:= $(empty) $(empty)
@@ -89,7 +90,11 @@ prepare-tmpinfo: FORCE
 		[ "$$t" -nt "$$f" ] || ./scripts/$${type}-metadata.pl $(_ignore) config "$$f" > "$$t" || { rm -f "$$t"; echo "Failed to build $$t"; false; break; }; \
 	done
 	[ tmp/.config-feeds.in -nt tmp/.packageauxvars ] || ./scripts/feeds feed_config > tmp/.config-feeds.in
+ifeq ($(CONFIG_TARGET_iopsys_brcm63xx_arm)$(CONFIG_TARGET_iopsys_brcm63xx_mips),)
 	./scripts/package-metadata.pl mk tmp/.packageinfo > tmp/.packagedeps || { rm -f tmp/.packagedeps; false; }
+else
+	./scripts/package-metadata.pl mk tmp/.packageinfo skip-kmods > tmp/.packagedeps || { rm -f tmp/.packagedeps; false; }
+endif
 	./scripts/package-metadata.pl pkgaux tmp/.packageinfo > tmp/.packageauxvars || { rm -f tmp/.packageauxvars; false; }
 	touch $(TOPDIR)/tmp/.build
 
