@@ -411,8 +411,10 @@ sub gen_package_mk() {
 
 				my $vpkg_dep = $vpackage{$dep};
 				unless (defined $vpkg_dep) {
-					warn sprintf "WARNING: Makefile '%s' has a dependency on '%s', which does not exist\n",
+					if (not $dep =~ /^kmod-/ ) {
+						warn sprintf "WARNING: Makefile '%s' has a dependency on '%s', which does not exist\n",
 						$src->{makefile}, $dep;
+					}
 					next;
 				}
 
