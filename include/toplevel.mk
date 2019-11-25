@@ -43,7 +43,9 @@ unexport LPATH
 # make sure that a predefined CFLAGS variable does not disturb packages
 export CFLAGS=
 export LDFLAGS=
+ifneq (,$(wildcard $(TOPDIR)/.config))
 -include $(TOPDIR)/.config
+endif
 
 empty:=
 space:= $(empty) $(empty)
