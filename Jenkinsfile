@@ -434,15 +434,12 @@ def our_stages(boards){
 				}
 				/* firmware file */
 				echo "Uploading the image(s) to ${img_upload_path}"
-				if ( iopsys_version == "4" ) {
-					sh "scp ./bin/targets/${target}/${subtarget}/${filename}-* ${img_upload_path}"
-					/* store filesystem tar file also */
-					if (store_rootfs) {
-						img_name = sh (script: "find ./bin/targets/${target}/${subtarget}/ -name '${filename}-*' -printf %f", returnStdout: true ).trim()
-						sh "scp ./bin/targets/${target}/${subtarget}/*${board}-rootfs.tar.gz ${img_upload_path}/${img_name}-rootfs.tar.gz"
-					}
-				} else if ( iopsys_version == "3" ) {
-					sh "scp ./bin/${target}/${filename}-* ${img_upload_path}"
+
+				sh "scp ./bin/targets/${target}/${subtarget}/${filename}-* ${img_upload_path}"
+				/* store filesystem tar file also */
+				if (store_rootfs) {
+					img_name = sh (script: "find ./bin/targets/${target}/${subtarget}/ -name '${filename}-*' -printf %f", returnStdout: true ).trim()
+					sh "scp ./bin/targets/${target}/${subtarget}/*${board}-rootfs.tar.gz ${img_upload_path}/${img_name}-rootfs.tar.gz"
 				}
 
 				/* packages if type is alpha || beta || rc || release */
@@ -457,21 +454,16 @@ def our_stages(boards){
 
 					echo "Upload packages"
 
-					if ( iopsys_version == "4" ) {
-						def package_arch = sh (
-							script: 'grep CONFIG_TARGET_ARCH_PACKAGES= .config | cut -d \'=\' -f2 | tr -d \'"\'',
-							returnStdout: true
-						).trim()
+					def package_arch = sh (
+						script: 'grep CONFIG_TARGET_ARCH_PACKAGES= .config | cut -d \'=\' -f2 | tr -d \'"\'',
+						returnStdout: true
+					).trim()
 
-						/* upload generic packages */
-						sh "scp \$(find bin/packages/${package_arch}/ -name *.ipk) ${IOPSYS_PACKAGES_PATH}/${target}/${folder_name}/"
+					/* upload generic packages */
+					sh "scp \$(find bin/packages/${package_arch}/ -name *.ipk) ${IOPSYS_PACKAGES_PATH}/${target}/${folder_name}/"
 
-						/* upload target-specific packages */
-						sh "scp \$(find bin/targets/${target}/ -name *.ipk) ${IOPSYS_PACKAGES_PATH}/${target}/${folder_name}/"
-
-					} else if ( iopsys_version == "3" ) {
-						sh "scp \$(find bin/${target}/ -name *.ipk) ${IOPSYS_PACKAGES_PATH}/${target}/${folder_name}/"
-					}
+					/* upload target-specific packages */
+					sh "scp \$(find bin/targets/${target}/ -name *.ipk) ${IOPSYS_PACKAGES_PATH}/${target}/${folder_name}/"
 				}
 
 			} else {
@@ -484,11 +476,8 @@ def our_stages(boards){
 
 				/* firmware file */
 				echo "Uploading the image(s) to ${img_upload_path}"
-				if ( iopsys_version == "4" ) {
-					sh "scp ./bin/targets/${target}/generic/${filename}* ${img_upload_path}"
-				} else if ( iopsys_version == "3" ) {
-					sh "scp ./bin/${target}/${filename}* ${img_upload_path}"
-				}
+				sh "scp ./bin/targets/${target}/generic/${filename}* ${img_upload_path}"
+
 			}
 
 			/* Generate tarballs. this should only be done on private NIGTHLY or private tag builds builds */
