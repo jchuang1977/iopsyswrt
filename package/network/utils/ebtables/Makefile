@@ -6,7 +6,6 @@
 #
 
 include $(TOPDIR)/rules.mk
-include $(INCLUDE_DIR)/kernel.mk
 
 PKG_NAME:=ebtables
 PKG_SOURCE_DATE:=2018-06-27
@@ -47,25 +46,6 @@ define Package/ebtables-utils/description
 	$(call Package/ebtables/description)
 endef
 
-define KernelPackage/intel-ebtables
- TITLE:=Intel Ebtables
- SUBMENU:=Intel
- DEPENDS:=+kmod-nf-ipt
- KCONFIG:= \
-	CONFIG_BRIDGE_EBT_EXTMARK=m \
-	CONFIG_BRIDGE_EBT_EXTMARK_T=m
- FILES:= \
-	$(LINUX_DIR)/net/bridge/netfilter/ebt_extmark.ko \
-	$(LINUX_DIR)/net/bridge/netfilter/ebt_extmark_m.ko
- AUTOLOAD:= \
-	$(call AutoProbe,ebt_extmark) \
-	$(call AutoProbe,ebt_extmark_m)
-endef
-
-define KernelPackage/intel-ebtables/description
- Extension mark support in ebtables
-endef
-
 MAKE_VARS += EXT_LIBSI="$(LIBGCC_S)"
 
 MAKE_FLAGS += \
@@ -90,4 +70,3 @@ endef
 
 $(eval $(call BuildPackage,ebtables))
 $(eval $(call BuildPackage,ebtables-utils))
-$(eval $(call KernelPackage,intel-ebtables))
