@@ -99,7 +99,6 @@ def all_boards = broadcom_boards + mediatek_boards + intel_boards
 /* boards to build */
 def boards = get_enabled(all_boards)
 
-
 echo "enabled boards is $boards"
 
 /********************************************************************************/
@@ -255,8 +254,10 @@ node(execute_on_node){
 		mail (subject: "Jenkins build ${env.JOB_NAME} #${env.BUILD_NUMBER} failed",
 		      body: "Build URL: ${env.BUILD_URL}.\n\n",
 		      to :"${email}"
+					)	
 		      //to :"dev@iopsys.eu"
-			)
+
+
 		throw error
 	}finally {
 	}
@@ -338,7 +339,10 @@ def our_stages(boards){
 		echo "Doing bcmkernel clean"
 		try {sh 'make package/feeds/broadcom/bcmkernel/clean' } catch (error){}
 
-
+		if ( [ "RELEASE" ].contains(build_type)){
+		echo "Doing bin clean so that Licences reports can be generated "
+		sh 'rm -rf ./bin/*'
+		}
 		stage (" ${board} Download") {
 			echo "make download"
 
@@ -480,6 +484,25 @@ def our_stages(boards){
 
 			}
 
+				if ( [ "RELEASE" ].contains(build_type) &&  BoardLicenses.contains("${board}") ){
+					/* Generate licenses report. this should only be done on relases */
+						echo "Generate license report"
+						sh "rm -rfv ./reports"
+						sh "ls -l"
+        		sh "./iop license_report"
+						sh "rm -rfv ./docs-iopsys-release-notes"
+						sh "scp ./reports/*.html ${sw_user}@${sw_host}:/var/www/html/iopsys/licensesreport"
+						sh "scp -r ./reports/licenses-report ${sw_user}@${sw_host}:/var/www/html/iopsys/licensesreport/"
+						sh "git clone git@dev.iopsys.eu:docs/docs-iopsys-release-notes.git"
+						sh "git --git-dir ./docs-iopsys-release-notes/.git --work-tree ./docs-iopsys-release-notes fetch --all --tags --prune"
+						sh "git --git-dir ./docs-iopsys-release-notes/.git --work-tree ./docs-iopsys-release-notes pull origin ${gitbranch}"
+						sh "git --git-dir ./docs-iopsys-release-notes/.git --work-tree ./docs-iopsys-release-notes checkout  -B ${gitbranch}"
+						sh "cp ./reports/*.md docs-iopsys-release-notes/licenses/${target}/"
+						sh "git --git-dir ./docs-iopsys-release-notes/.git --work-tree ./docs-iopsys-release-notes add licenses/${target}/*.md "
+						sh "git --git-dir ./docs-iopsys-release-notes/.git --work-tree ./docs-iopsys-release-notes commit -am\"Added licenses Report to  ${target} for ${gitbranch} version \""
+						sh "git --git-dir ./docs-iopsys-release-notes/.git --work-tree ./docs-iopsys-release-notes push origin ${gitbranch}"
+					}
+
 			/* Generate tarballs. this should only be done on private NIGTHLY or private tag builds builds */
 			if ( [ "NIGHTLY", "RELEASE", "ALPHA", "BETA", "RC" ].contains(build_type)){
 				if ( access_level == "private" ) {
@@ -590,4 +613,3 @@ def get_enabled(all){
 	}
 	return boards
 }
-
