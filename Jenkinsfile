@@ -43,19 +43,14 @@
 
 
          Boards:
-		eg300
 		dg301
-		dg301al
 
-		eg200
 		dg200
-		dg200al
 
 		dg400prime
 		eg400
 		dg400
 		f104w
-		sdx810_rg
 
 		ex400
 		sdx810_ap
@@ -82,15 +77,14 @@
 */
 
 broadcom_boards = [
-		"dg400prime","eg400","sdx810_rg","dg400","f104w",
-
-		"eg300", "cg300", "dg301", "dg301al",
-		"eg200", "dg200", "dg200al",
+		"dg400prime","eg400","dg400","f104w",
+		"dg301",
+		"dg200",
 		"sphinx",
 		"yinyang",
 ]
 
-mediatek_boards = [ "ex400","sdx810_ap"]
+mediatek_boards = [ "ex400","sdx810_ap" ]
 
 intel_boards = [ "easy350", "easy550", "speedport_smart3", "norrland" ]
 
