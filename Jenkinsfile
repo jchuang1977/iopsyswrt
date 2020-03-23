@@ -62,7 +62,7 @@
 
 		sphinx
 
-		yinyang
+		panther
 
 */
 
@@ -81,7 +81,7 @@ broadcom_boards = [
 		"dg301",
 		"dg200",
 		"sphinx",
-		"yinyang",
+		"panther",
 ]
 
 mediatek_boards = [ "ex400","sdx810_ap" ]
