@@ -60,7 +60,7 @@
 		speedport_smart3
 		norrland
 
-		sphinx
+		tiger
 
 		panther
 
@@ -80,7 +80,7 @@ broadcom_boards = [
 		"dg400prime","eg400","dg400","f104w",
 		"dg301",
 		"dg200",
-		"sphinx",
+		"tiger",
 		"panther",
 ]
 
