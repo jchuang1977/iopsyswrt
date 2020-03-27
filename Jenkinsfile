@@ -38,6 +38,8 @@
 
 		customer	string	def	""
 
+		LicenseReport			bolean
+
 		email		string	def	"dev@iopsys.eu"
 		email_success	boolean def	false		// If true an email will be sent on success to $email
 
@@ -478,12 +480,12 @@ def our_stages(boards){
 
 			}
 
-				if ( [ "RELEASE" ].contains(build_type) &&  BoardLicenses.contains("${board}") ){
+				if ( (params.LicenseReport) && [ "RELEASE" ].contains(build_type) &&  BoardLicenses.contains("${board}") ){
 					/* Generate licenses report. this should only be done on relases */
 						echo "Generate license report"
 						sh "rm -rfv ./reports"
 						sh "ls -l"
-        		sh "./iop license_report"
+						sh "./iop license_report"
 						sh "rm -rfv ./docs-iopsys-release-notes"
 						sh "scp ./reports/*.html ${sw_user}@${sw_host}:/var/www/html/iopsys/licensesreport"
 						sh "scp -r ./reports/licenses-report ${sw_user}@${sw_host}:/var/www/html/iopsys/licensesreport/"
