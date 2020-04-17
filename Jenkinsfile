@@ -39,6 +39,7 @@
 		customer	string	def	""
 
 		LicenseReport			bolean
+		CVEReport   boolean
 
 		email		string	def	"dev@iopsys.eu"
 		email_success	boolean def	false		// If true an email will be sent on success to $email
@@ -250,7 +251,7 @@ node(execute_on_node){
 		mail (subject: "Jenkins build ${env.JOB_NAME} #${env.BUILD_NUMBER} failed",
 		      body: "Build URL: ${env.BUILD_URL}.\n\n",
 		      to :"${email}"
-					)	
+					)
 		      //to :"dev@iopsys.eu"
 
 
@@ -479,25 +480,43 @@ def our_stages(boards){
 				sh "scp ./bin/targets/${target}/generic/${filename}* ${img_upload_path}"
 
 			}
+			if (params.CVEReport)
+			{
+				try {
+					/* This will fail if the working directory is already a git repo */
+					echo "Trying to clone "
+					sh "git clone git@dev.iopsys.eu:iopsys/cve-indicator.git "
+					} catch(error){
 
-				if ( (params.LicenseReport) && [ "RELEASE" ].contains(build_type) &&  BoardLicenses.contains("${board}") ){
+						echo "directory did already exist doing a update"
+						sh "git --git-dir ./cve-indicator/.git --work-tree ./cve-indicator fetch --all --tags --prune"
+					}
+					sh "./cve-indicator/iopsys_script/createreport.sh"
+					sh "scp ./reports/indicator*.html ${sw_user}@${sw_host}:/var/www/html/iopsys/cve"
+					sh "scp -r ./reports/cve-indicator-report ${sw_user}@${sw_host}:/var/www/html/iopsys/cve"
+
+			}
+				if ( (params.LicenseReport) &&  BoardLicenses.contains("${board}") ){
 					/* Generate licenses report. this should only be done on relases */
 						echo "Generate license report"
 						sh "rm -rfv ./reports"
-						sh "ls -l"
 						sh "./iop license_report"
 						sh "rm -rfv ./docs-iopsys-release-notes"
-						sh "scp ./reports/*.html ${sw_user}@${sw_host}:/var/www/html/iopsys/licensesreport"
+						sh "scp ./reports/license*.html ${sw_user}@${sw_host}:/var/www/html/iopsys/licensesreport"
 						sh "scp -r ./reports/licenses-report ${sw_user}@${sw_host}:/var/www/html/iopsys/licensesreport/"
-						sh "git clone git@dev.iopsys.eu:docs/docs-iopsys-release-notes.git"
-						sh "git --git-dir ./docs-iopsys-release-notes/.git --work-tree ./docs-iopsys-release-notes fetch --all --tags --prune"
-						sh "git --git-dir ./docs-iopsys-release-notes/.git --work-tree ./docs-iopsys-release-notes pull origin ${gitbranch}"
-						sh "git --git-dir ./docs-iopsys-release-notes/.git --work-tree ./docs-iopsys-release-notes checkout  -B ${gitbranch}"
-						sh "cp ./reports/*.md docs-iopsys-release-notes/licenses/${target}/"
-						sh "git --git-dir ./docs-iopsys-release-notes/.git --work-tree ./docs-iopsys-release-notes add licenses/${target}/*.md "
-						sh "git --git-dir ./docs-iopsys-release-notes/.git --work-tree ./docs-iopsys-release-notes commit -am\"Added licenses Report to  ${target} for ${gitbranch} version \""
-						sh "git --git-dir ./docs-iopsys-release-notes/.git --work-tree ./docs-iopsys-release-notes push origin ${gitbranch}"
+						if ( (params.LicenseReport) && [ "RELEASE" ].contains(build_type))
+							{
+								echo "pushing License report to doc repository"
+								sh "git clone git@dev.iopsys.eu:docs/docs-iopsys-release-notes.git"
+								sh "git --git-dir ./docs-iopsys-release-notes/.git --work-tree ./docs-iopsys-release-notes fetch --all --tags --prune"
+								sh "git --git-dir ./docs-iopsys-release-notes/.git --work-tree ./docs-iopsys-release-notes pull origin ${gitbranch}"
+								sh "git --git-dir ./docs-iopsys-release-notes/.git --work-tree ./docs-iopsys-release-notes checkout  -B ${gitbranch}"
+								sh "cp ./reports/*.md docs-iopsys-release-notes/licenses/${target}/"
+								sh "git --git-dir ./docs-iopsys-release-notes/.git --work-tree ./docs-iopsys-release-notes add licenses/${target}/*.md "
+								sh "git --git-dir ./docs-iopsys-release-notes/.git --work-tree ./docs-iopsys-release-notes commit -am\"Added licenses Report to  ${target} for ${gitbranch} version \""
+								sh "git --git-dir ./docs-iopsys-release-notes/.git --work-tree ./docs-iopsys-release-notes push origin ${gitbranch}"
 					}
+				}
 
 			/* Generate tarballs. this should only be done on private NIGTHLY or private tag builds builds */
 			if ( [ "NIGHTLY", "RELEASE", "ALPHA", "BETA", "RC" ].contains(build_type)){
