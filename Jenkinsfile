@@ -40,6 +40,7 @@
 
 		LicenseReport			bolean
 		CVEReport   boolean
+		OpenSDKTarballs			bolean
 
 		email		string	def	"dev@iopsys.eu"
 		email_success	boolean def	false		// If true an email will be sent on success to $email
@@ -519,7 +520,7 @@ def our_stages(boards){
 				}
 
 			/* Generate tarballs. this should only be done on private NIGTHLY or private tag builds builds */
-			if ( [ "NIGHTLY", "RELEASE", "ALPHA", "BETA", "RC" ].contains(build_type)){
+			if ( (params.OpenSDKTarballs) && [ "NIGHTLY", "RELEASE", "ALPHA", "BETA", "RC" ].contains(build_type)){
 				if ( access_level == "private" ) {
 					echo "Generating tarballs to public mirror"
 					switch( board.toString() ) {
