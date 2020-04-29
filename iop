@@ -51,31 +51,37 @@ function install_locales()
 function install_pkgs()
 {
     local packages_misc="
+bc
 bison
 build-essential
 ccache
-dialog
-pv
 curl
+dialog
 execstack
+file
 flex
 g++
 g++-multilib
 gawk
 gettext
+git
 git automake
 gtk-doc-tools
 liblzo2-dev
 libncurses5-dev
 libssl-dev
 ncurses-term
+pv
 python
+rsync
 subversion
 svn-buildpackage
+swig
 unzip
 uuid-dev
 wget
 zlib1g-dev
+xxd
 "
     local packages_perl="libconvert-binary-c-perl libdigest-crc-perl"
     local packages_npm="nodejs yui-compressor"
