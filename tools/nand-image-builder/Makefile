@@ -13,7 +13,7 @@ PKG_VERSION:=1.0
 PKG_SOURCE_URL:=https://dev.iopsys.eu/broadcom/nand-image-builder.git
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)
-PKG_SOURCE_VERSION:=fd35828b7a790a90a07fb8918e35343f8184b1f6
+PKG_SOURCE_VERSION:=f21177edf84ac46dc6f409d0015de8da6aa25ba6
 
 
 # Source settings (i.e. where to find the source codes)
