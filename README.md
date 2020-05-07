@@ -71,6 +71,7 @@ Avaliable commands:
    bootstrap                Initial command to run to install other commands
    feeds_update             Update feeds to point to commit hashes from feeds.conf
    genconfig                Genereate configuration for board and customer
+   genconfig_min            Genereate configuration for board and customer (manual)
    generate_tarballs        Generate tarballs for openstk
    setup_host               Install needed packages to host machine
    status                   Display the state of your working tree
