@@ -1,0 +1,47 @@
+stages:
+  - sdk
+  - firmware
+
+sdk:
+  stage: sdk
+  tags:
+    - docker
+  image:
+    name: gcr.io/kaniko-project/executor:debug-v0.16.0
+    entrypoint: [""]
+  variables:
+    GIT_DEPTH: 1
+  script:
+    - mkdir -p /kaniko/.docker
+    - echo "{\"auths\":{\"${REGISTRY_URL}\":{\"auth\":\"${REGISTRY_AUTH}\"}}}" > /kaniko/.docker/config.json
+    - /kaniko/executor --context ${CI_PROJECT_DIR} --dockerfile ${CI_PROJECT_DIR}/Dockerfile --destination ${REGISTRY_REPOSITORY}:${CI_COMMIT_SHORT_SHA} --destination ${REGISTRY_REPOSITORY}:latest
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+      when: never
+    - if: '$CI_COMMIT_BRANCH == "devel"'
+      changes:
+        - Dockerfile
+        - docker/**
+        - iop
+      when: on_success
+  interruptible: true
+
+dg400prime:
+  stage: firmware
+  tags:
+    - docker
+  image:
+    name: ${REGISTRY_REPOSITORY}
+  script:
+    - echo "https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}" > ~/.git-credentials
+    - ./iop bootstrap
+    - ./iop feeds_update
+    - ./iop genconfig_min dg400prime
+    - make -j$(nproc)
+  artifacts:
+    paths:
+      - bin/targets/*/*/*.y3
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+      when: on_success
+  interruptible: true
