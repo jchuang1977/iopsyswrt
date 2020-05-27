@@ -231,12 +231,11 @@ node(execute_on_node){
 
 	echo "The build will be using ${node_cpus} parallel jobs"
 
-	// Do all the build stuff in stages.
+	// Do all the stuff in stages.
 	try{
 		ansiColor('xterm'){
 			our_stages(boards)
 		}
-                test_stages()
 
 		// Email on success
 		if (params.email_success != null && params.email_success) {
@@ -393,6 +392,8 @@ def our_stages(boards){
 */		}
 
 
+		img_server_path = "";
+
 		stage ("${board} Result") {
 			def target = sh (script: 'sed -n \'s/^CONFIG_TARGET_BOARD="\\(.*\\)"/\\1/p\' .config', returnStdout: true ).trim()
 			def subtarget = sh (script: 'sed -n \'s/^CONFIG_TARGET_SUBTARGET="\\(.*\\)"/\\1/p\' .config', returnStdout: true ).trim()
@@ -429,6 +430,11 @@ def our_stages(boards){
 				sh "ssh ${sw_user}@${sw_host} mkdir -p ${mkdir_path}"
 
 				def img_upload_path = "${IOPSYS_FIRMWARE_PATH}/${build_type}/IOP${iopsys_version}/${dirname}/"
+
+				/* Used for stage Test */
+				def img_filename = sh (script: 'basename $(ls -t ./bin/targets/'+target+'/'+subtarget+'/'+filename+'-*.y3 | head -n1)', returnStdout: true).trim()
+				img_server_path = "${IOPSYS_FIRMWARE_URL}/${build_type}/IOP${iopsys_version}/${dirname}/${img_filename}"
+
 				if ( customer != "" ) {
 					def customers = customer.split(" ")
 					def folder = customers[customers.length -1]
@@ -553,65 +559,17 @@ def our_stages(boards){
 		   	}
 			echo "Done"
 		}
+
+		stage ("${board} Test") {
+			if ( access_level == "private" ) {
+				build job: 'iopsysWrt-Test', propagate: false, parameters: [
+				string(name: 'BOARD_NAME_UPPERCASE', value: board.toUpperCase()),
+				string(name: 'PARAM_SUT_FIRMWARE', value: img_server_path),
+				string(name: 'BUILD_TYPE', value: build_type)]
+			}
+		}
 	}
 }
-
-def test_stages() {
-	stage ('Test') {
-                echo "starting test TBD"
-/*
-                if ( access_level == "private" ) {
-
-                   // FIXME create testjobs with naming convention below
-                   //build job: ' test_01_updateALLsimple_IOP"$iopsys_version"_"$build_type", wait : false
-                   //
-                   echo "start test of $build_type, IOP$iopsys_version access_level_$access_level"
-                   if ( build_type == "ALPHA") {
-                            if ( iopsys_version == "3" ){
-                                build job: 'test_01_updateALLsimple_IOP3_alpha', wait : false
-                            }
-                            if ( iopsys_version == "4" ){
-                                build job: 'test_01_updateALLsimple_IOP4_alpha', wait : false
-                            }
-                    }
-                    if ( build_type == "BETA") {
-                            if ( iopsys_version == "3" ){
-                                build job: 'test_01_updateALLsimple_IOP3_beta', wait : false
-                            }
-                            if ( iopsys_version == "4" ){
-                                build job: 'test_01_updateALLsimple_IOP4_beta', wait : false
-                            }
-                    }
-                    if ( build_type == "RC") {
-                            if ( iopsys_version == "3" ){
-                                build job: 'test_01_updateALLsimple_IOP3_RC', wait : false
-                            }
-                            if ( iopsys_version == "4" ){
-                                build job: 'test_01_updateALLsimple_IOP4_RC', wait : false
-                            }
-                    }
-                    if ( build_type == "RELEASE") {
-                            if ( iopsys_version == "3" ){
-                                build job: 'test_01_updateALLsimple_IOP3_release', wait : false
-                            }
-                            if ( iopsys_version == "4" ){
-                                build job: 'test_01_updateALLsimple_IOP4_release', wait : false
-                            }
-                    }
-                    if ( build_type == "NIGHTLY") {
-                        echo "NIGHTLY test jobs triggered from each project"
-                    }
-               } //access_level == private
-
-             if ( access_level == "public" ) {
-                   // FIXME create testjobs for openSDK
-                   //build job: ' test_01_OpenSDK_IOP"$iopsys_version"_"$build_type", wait : false
-                   echo "start test OpenSDK"
-                } //access_level == public
-*/
-	} //stage
-	echo "Done testing"
-} //test_stages()
 
 /* Takes a list of boolean parameters and return the ones that is true in a new list */
 /* speacial name stage_* is not checked and just copied over */
