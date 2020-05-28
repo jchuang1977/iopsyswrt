@@ -33,10 +33,5 @@ git-src
 .current_config_file
 .genconfig.config
 customerconfigs/
-target/linux/iopsys-brcm63xx-arm
-target/linux/iopsys-brcm63xx-mips
-target/linux/iopsys-ramips
-target/linux/iopsys-grx
+target/linux/iopsys-*
 target/linux/intel_mips
-
-
