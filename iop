@@ -181,6 +181,9 @@ uglify-js
 	done
     fi
 
+    # In Ubuntu 20.04, node-less must be installed explicitly
+    sudo apt install -y node-less
+
     sudo chown -R $USER:$USER /home/$USER/.npm/
 }
 
