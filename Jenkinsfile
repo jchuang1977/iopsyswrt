@@ -47,41 +47,30 @@
 
 
          Boards:
-		/* BCM63268 */
 		dg301
 
-		/* BCM63168 */
 		dg200
 
-		/* BCM63138 */
 		dg400prime
 		eg400
 		dg400
 		f104w
 
-		/* BCM6858 */
 		tiger
 
-		/* BCM6846 */
 		panther
 
-		/* BCM63158 */
 		arc63158ref
 
-		/* BCM6762 */
 		srcmm6752ref
 
-		/* BCM6856 */
 		xue534
 
-		/* MT7621 */
 		ex400
 		sdx810_ap
 
-		/* GRX350 */
 		easy350
 		norrland
-		/* GRX550 */
 		easy550
 		speedport_smart3
 
