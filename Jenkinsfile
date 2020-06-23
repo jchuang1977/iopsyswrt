@@ -47,26 +47,43 @@
 
 
          Boards:
+		/* BCM63268 */
 		dg301
 
+		/* BCM63168 */
 		dg200
 
+		/* BCM63138 */
 		dg400prime
 		eg400
 		dg400
 		f104w
 
+		/* BCM6858 */
+		tiger
+
+		/* BCM6846 */
+		panther
+
+		/* BCM63158 */
+		arc63158ref
+
+		/* BCM6762 */
+		srcmm6752ref
+
+		/* BCM6856 */
+		xue534
+
+		/* MT7621 */
 		ex400
 		sdx810_ap
 
+		/* GRX350 */
 		easy350
+		norrland
+		/* GRX550 */
 		easy550
 		speedport_smart3
-		norrland
-
-		tiger
-
-		panther
 
 */
 
@@ -86,11 +103,14 @@ broadcom_boards = [
 		"dg200",
 		"tiger",
 		"panther",
+		"arc63158ref",
+		"srcmm6752ref",
+		"xue534"
 ]
 
 mediatek_boards = [ "ex400","sdx810_ap" ]
 
-intel_boards = [ "easy350", "easy550", "speedport_smart3", "norrland" ]
+intel_boards = [ "easy350", "norrland", "easy550", "speedport_smart3" ]
 
 def all_boards = broadcom_boards + mediatek_boards + intel_boards
 
