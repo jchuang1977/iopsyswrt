@@ -64,7 +64,7 @@
 
 		srcmm6752ref
 
-		xue534
+		xug534
 
 		ex400
 		sdx810_ap
@@ -94,7 +94,7 @@ broadcom_boards = [
 		"panther",
 		"arc63158ref",
 		"srcmm6752ref",
-		"xue534"
+		"xug534"
 ]
 
 mediatek_boards = [ "ex400","sdx810_ap" ]
