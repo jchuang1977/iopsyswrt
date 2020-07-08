@@ -16,3 +16,6 @@ endef
 
 Hooks/Prepare/Post += git_update
 
+# Paths
+export IOPSYS_FEED_TARGETS = $(TOPDIR)/feeds/targets
+
