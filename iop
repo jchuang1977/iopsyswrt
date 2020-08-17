@@ -63,6 +63,7 @@ flex
 g++
 g++-multilib
 gawk
+gdisk
 gettext
 git
 automake
