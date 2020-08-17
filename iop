@@ -65,7 +65,7 @@ g++-multilib
 gawk
 gettext
 git
-git automake
+automake
 gtk-doc-tools
 liblzo2-dev
 libncurses5-dev
