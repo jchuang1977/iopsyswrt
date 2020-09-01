@@ -159,7 +159,6 @@ install_npm(){
 npm
 less
 uglify-js
-yarn
 "
     local needed=""
 
