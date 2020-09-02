@@ -7,7 +7,7 @@ sdk:
   tags:
     - docker
   image:
-    name: gcr.io/kaniko-project/executor:debug-v0.16.0
+    name: gcr.io/kaniko-project/executor:debug-v1.0.0
     entrypoint: [""]
   variables:
     GIT_DEPTH: 1
