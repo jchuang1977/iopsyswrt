@@ -69,6 +69,7 @@ git
 automake
 gtk-doc-tools
 liblzo2-dev
+libncurses5
 libncurses5-dev
 libssl-dev
 ncurses-term
@@ -85,7 +86,7 @@ zlib1g-dev
 xxd
 "
     local packages_perl="libconvert-binary-c-perl libdigest-crc-perl"
-    local packages_npm="nodejs yui-compressor"
+    local packages_npm="nodejs npm yui-compressor"
 
     # do we need 32 bit compatibility libs ?
     if [ "$(uname -m | awk '{print$1}')" == "x86_64" ]; then
@@ -157,7 +158,6 @@ check_bash()
 install_npm(){
 
     local npm_package="
-npm
 less
 uglify-js
 yarn
@@ -186,7 +186,7 @@ yarn
     # In Ubuntu 20.04, node-less must be installed explicitly
     sudo apt install -y node-less
 
-    sudo chown -R $USER:$USER /home/$USER/.npm/
+    sudo chown -R $(id -u):$(id -g) "${HOME}/.npm/"
 }
 
 check_brcm_tools(){
@@ -239,33 +239,33 @@ check_brcm_tools(){
 
 		if [ $install_mips -eq 1 ]; then
 			echo "Installing MIPS toolchain"
-			wget https://download.iopsys.eu/iopsys/toolchain/crosstools-mips-gcc-5.3-linux-4.1-uclibc-1.0.12-binutils-2.25-NPTL.Rel1.8.tar.bz2
+			wget -nv https://download.iopsys.eu/iopsys/toolchain/crosstools-mips-gcc-5.3-linux-4.1-uclibc-1.0.12-binutils-2.25-NPTL.Rel1.8.tar.bz2
 			tar -Pjxf crosstools-mips-gcc-5.3-linux-4.1-uclibc-1.0.12-binutils-2.25-NPTL.Rel1.8.tar.bz2
 			rm crosstools-mips-gcc-5.3-linux-4.1-uclibc-1.0.12-binutils-2.25-NPTL.Rel1.8.tar.bz2
 		fi
 
 		if [ $install_arm_uclib -eq 1 ]; then
                         echo "Installing ARM Uclibs toolchain"
-                       wget https://download.iopsys.eu/iopsys/toolchain/crosstools-arm-gcc-5.3-linux-4.1-uclibc-1.0.12-binutils-2.25-NPTL.Rel1.8.tar.bz2
+                       wget -nv https://download.iopsys.eu/iopsys/toolchain/crosstools-arm-gcc-5.3-linux-4.1-uclibc-1.0.12-binutils-2.25-NPTL.Rel1.8.tar.bz2
                        tar -Pjxf crosstools-arm-gcc-5.3-linux-4.1-uclibc-1.0.12-binutils-2.25-NPTL.Rel1.8.tar.bz2
                        rm crosstools-arm-gcc-5.3-linux-4.1-uclibc-1.0.12-binutils-2.25-NPTL.Rel1.8.tar.bz2
 		fi
 
 		if [ $install_arm_glib -eq 1 ]; then
 			echo "Installing ARM Glibc toolchain"
-			wget https://download.iopsys.eu/iopsys/toolchain/crosstools-arm-gcc-5.3-linux-4.1-glibc-2.22-binutils-2.25.Rel1.8.tar.bz2
+			wget -nv https://download.iopsys.eu/iopsys/toolchain/crosstools-arm-gcc-5.3-linux-4.1-glibc-2.22-binutils-2.25.Rel1.8.tar.bz2
 			tar -Pjxf crosstools-arm-gcc-5.3-linux-4.1-glibc-2.22-binutils-2.25.Rel1.8.tar.bz2
 			rm crosstools-arm-gcc-5.3-linux-4.1-glibc-2.22-binutils-2.25.Rel1.8.tar.bz2
 		fi
 		if [ $install_arm_gcc_55 -eq 1 ]; then
 			echo "Installing ARM gcc 5.5 toolchain"
-			wget https://download.iopsys.eu/iopsys/toolchain/crosstools-arm-gcc-5.5-linux-4.1-glibc-2.26-binutils-2.28.1.tar.bz2
+			wget -nv https://download.iopsys.eu/iopsys/toolchain/crosstools-arm-gcc-5.5-linux-4.1-glibc-2.26-binutils-2.28.1.tar.bz2
 			tar -Pjxf crosstools-arm-gcc-5.5-linux-4.1-glibc-2.26-binutils-2.28.1.tar.bz2
 			rm crosstools-arm-gcc-5.5-linux-4.1-glibc-2.26-binutils-2.28.1.tar.bz2
 		fi
 		if [ $install_aarch64_gcc_55 -eq 1 ]; then
 			echo "Installing aarch64 gcc 5.5 toolchain"
-			wget https://download.iopsys.eu/iopsys/toolchain/crosstools-aarch64-gcc-5.5-linux-4.1-glibc-2.26-binutils-2.28.1.tar.bz2
+			wget -nv https://download.iopsys.eu/iopsys/toolchain/crosstools-aarch64-gcc-5.5-linux-4.1-glibc-2.26-binutils-2.28.1.tar.bz2
 			tar -Pjxf crosstools-aarch64-gcc-5.5-linux-4.1-glibc-2.26-binutils-2.28.1.tar.bz2
 			rm crosstools-aarch64-gcc-5.5-linux-4.1-glibc-2.26-binutils-2.28.1.tar.bz2
 		fi
