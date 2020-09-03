@@ -25,6 +25,8 @@ COPY iop /
 RUN yes | /iop setup_host && \
     rm /iop
 
+RUN echo "dev ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/10-dev
+
 
 USER dev:dev
 ENTRYPOINT ["/usr/local/bin/fixuid", "-q"]
