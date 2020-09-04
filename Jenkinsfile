@@ -385,20 +385,17 @@ def our_stages(boards){
 				sh "make clean"
 			}
 
-//			try {
+			try {
 				if ( Verbose_build ){
 					sh "make -j$node_cpus V=s"
 				}else{
 					sh "make -j$node_cpus"
 				}
-//			} /* if build fail rebuild non parallel and with verbose output */
-/* Do not do this for a while. */
-/* we get inconsistent build times.  */
-/* this forces us to look into why it fails, it should not really do that. */
-/*			catch(error){
+			} /* if build fail rebuild non parallel and with verbose output */
+			catch(error){
 				sh 'make -j1 V=s'
 			}
-*/		}
+		}
 
 
 		img_server_path = "";
