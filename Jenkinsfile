@@ -566,12 +566,18 @@ def our_stages(boards){
 			echo "Done"
 		}
 
-		stage ("${board} Test") {
-			if ( access_level == "private" ) {
-				build job: 'iopsysWrt-Test', propagate: false, wait: false, parameters: [
-				string(name: 'BOARD_NAME_UPPERCASE', value: board.toUpperCase()),
-				string(name: 'PARAM_SUT_FIRMWARE', value: img_server_path),
-				string(name: 'BUILD_TYPE', value: build_type)]
+		if ( RunTests && access_level == "private" ) {
+			stage ("${board} Test") {
+				build(
+					job: 'iopsysWrt-Test',
+					propagate: false,
+					wait: false,
+					parameters: [
+						string(name: 'BOARD_NAME_UPPERCASE', value: board.toUpperCase()),
+						string(name: 'PARAM_SUT_FIRMWARE', value: img_server_path),
+						string(name: 'BUILD_TYPE', value: build_type)
+					]
+				)
 			}
 		}
 	}
