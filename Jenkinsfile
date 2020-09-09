@@ -152,7 +152,7 @@ if (params.customer == null)
 echo "Parameter customer set to [${customer}]"
 
 /* Make sure that bolean parameters are actually bolean and not strings */
-/* variables to check: Parallel_build, Verbose_build, Verbose_download, store_rootfs */
+/* variables to check: Parallel_build, Verbose_build, Verbose_download, store_rootfs, RunTests */
 /* The variables needs to have a proper value if it's not set from jenkins or set to wrong type */
 /* is there a better way to do this ? less code using eval type of function over a list ?? */
 if (params.Parallel_build == null){
@@ -214,6 +214,18 @@ if (params.brcm_force_single_thread == null){
 	}
 }
 echo "Parameter brcm_force_single_thread set to [${brcm_force_single_thread}]"
+
+if (params.RunTests == null){
+	RunTests = false;
+}else{
+	if (params.RunTests){
+		RunTests = true;
+	}
+	else {
+		RunTests = false;
+	}
+}
+echo "Parameter RunTests set to [${RunTests}]"
 
 
 
