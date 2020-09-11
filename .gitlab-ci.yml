@@ -14,7 +14,14 @@ sdk:
   script:
     - mkdir -p /kaniko/.docker
     - echo "{\"auths\":{\"${REGISTRY_URL}\":{\"auth\":\"${REGISTRY_AUTH}\"}}}" > /kaniko/.docker/config.json
-    - /kaniko/executor --context ${CI_PROJECT_DIR} --dockerfile ${CI_PROJECT_DIR}/Dockerfile --destination ${REGISTRY_REPOSITORY}:${CI_COMMIT_SHORT_SHA} --destination ${REGISTRY_REPOSITORY}:latest
+    - DOCKER_BASE_VERSION="$(grep -m1 '^FROM' Dockerfile | cut -d':' -f2)"
+    - |
+        /kaniko/executor \
+          --context ${CI_PROJECT_DIR} \
+          --dockerfile ${CI_PROJECT_DIR}/Dockerfile \
+          --destination ${REGISTRY_REPOSITORY}:${CI_COMMIT_SHORT_SHA} \
+          --destination ${REGISTRY_REPOSITORY}:${DOCKER_BASE_VERSION} \
+          --destination ${REGISTRY_REPOSITORY}:latest
   rules:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
       when: never
@@ -23,7 +30,6 @@ sdk:
         - Dockerfile
         - docker/**
         - iop
-      when: on_success
   interruptible: true
 
 dg400prime:
@@ -44,5 +50,4 @@ dg400prime:
     expire_in: 2 week
   rules:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
-      when: on_success
   interruptible: true
