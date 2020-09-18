@@ -189,88 +189,64 @@ yarn
     sudo chown -R $(id -u):$(id -g) "${HOME}/.npm/"
 }
 
+
+download_extract_brcm_toolchain() {
+    local url="$1"
+    local sha256="$2"
+    local tarball="$(mktemp iop_brcm_tar.XXXXXXX)"
+    wget -nv "$url" -O "$tarball"
+    if ! sha256sum -c <(echo "${sha256} *${tarball}"); then
+        echo "Hash mismatch of tarball $url (expected: $sha256)"
+        sha256sum "$tarball"
+        rm -f $tarball
+        exit 1
+    fi
+    # current 9.2/4.19/2.30/2.32 BCM toolchain has owner of files set to some employee who created the tar
+    # Change to root during extraction
+    # tarballs have /opt/toolchains in them, hence the -P and no -C
+    sudo tar --owner=root --group=root -Pxf "$tarball"
+    rm -f "$tarball"
+}
+
+
 check_brcm_tools(){
-    local install_mips=0
     local install_arm=0
-    local install_arm_uclib=0
-    local install_arm_glib=0
-    local install_arm_gcc_55=0
-    local install_aarch64_gcc_55=0
+    local install_aarch64=0
 
-    if [ ! -d /opt/toolchains/crosstools-mips-gcc-5.3-linux-4.1-uclibc-1.0.12-binutils-2.25-NPTL ]; then
-	install_mips=1
-	echo "Need to install broadcom MIPS toolchain"
+    if [ ! -d /opt/toolchains/crosstools-arm-gcc-9.2-linux-4.19-glibc-2.30-binutils-2.32 ]; then
+        install_arm=1
+        echo "Need to install Broadcom ARM toolchain"
     fi
 
-	if [ ! -d /opt/toolchains/crosstools-arm-gcc-5.5-linux-4.1-glibc-2.26-binutils-2.28.1 ]; then
-        install_arm_gcc_55=1
-	echo "Need to install broadcom ARM gcc 5.5 toolchain"
+    if [ ! -d /opt/toolchains/crosstools-aarch64-gcc-9.2-linux-4.19-glibc-2.30-binutils-2.32 ]; then
+        install_aarch64=1
+        echo "Need to install Broadcom aarch64 toolchain"
     fi
 
-	if [ ! -d /opt/toolchains/crosstools-aarch64-gcc-5.5-linux-4.1-glibc-2.26-binutils-2.28.1 ]; then
-        install_aarch64_gcc_55=1
-	echo "Need to install broadcom aarch64 gcc 5.5 toolchain"
-    fi
+    if [ $install_arm -eq 1 -o $install_aarch64 -eq 1 ]; then
+        read -p "Do you approve installation of missing toolchains (y/n): " ans
+        if [ "$ans" == "y" ]; then
+            echo "Downloading toolchain"
+        else
+            echo "can't continue. aborting"
+            exit 1
+        fi
 
-    if [ ! -d /opt/toolchains/crosstools-arm-gcc-5.3-linux-4.1-uclibc-1.0.12-binutils-2.25-NPTL ]; then
-        install_arm_uclib=1
-	echo "Need to install broadcom ARM Uclibs toolchain"
-    fi
+        # create install dir
+        sudo mkdir -p /opt/toolchains/
 
-    if [ ! -d /opt/toolchains/crosstools-arm-gcc-5.3-linux-4.1-glibc-2.22-binutils-2.25 ]; then
-	install_arm_glib=1
-	echo "Need to install broadcom ARM Glibc toolchain"
-    fi
-
-    if [ $install_mips -eq 1 -o $install_arm_uclib -eq 1 -o $install_arm_glib -eq 1 \
-		 -o $install_aarch64_gcc_55 -eq 1 -o $install_arm_gcc_55 -eq 1 ]; then
-		read -p "Do you approve installation of missing toolchains (y/n): " ans
-		if [ "$ans" == "y" ]; then
-			echo "Downloading toolchain"
-		else
-			echo "can't continue. aborting"
-			exit 1
-		fi
-
-		# create install dir
-		sudo mkdir -p /opt/toolchains/
-		sudo chown $USER:$USER /opt/toolchains/
-		cd /opt/toolchains/
-
-		if [ $install_mips -eq 1 ]; then
-			echo "Installing MIPS toolchain"
-			wget -nv https://download.iopsys.eu/iopsys/toolchain/crosstools-mips-gcc-5.3-linux-4.1-uclibc-1.0.12-binutils-2.25-NPTL.Rel1.8.tar.bz2
-			tar -Pjxf crosstools-mips-gcc-5.3-linux-4.1-uclibc-1.0.12-binutils-2.25-NPTL.Rel1.8.tar.bz2
-			rm crosstools-mips-gcc-5.3-linux-4.1-uclibc-1.0.12-binutils-2.25-NPTL.Rel1.8.tar.bz2
-		fi
-
-		if [ $install_arm_uclib -eq 1 ]; then
-                        echo "Installing ARM Uclibs toolchain"
-                       wget -nv https://download.iopsys.eu/iopsys/toolchain/crosstools-arm-gcc-5.3-linux-4.1-uclibc-1.0.12-binutils-2.25-NPTL.Rel1.8.tar.bz2
-                       tar -Pjxf crosstools-arm-gcc-5.3-linux-4.1-uclibc-1.0.12-binutils-2.25-NPTL.Rel1.8.tar.bz2
-                       rm crosstools-arm-gcc-5.3-linux-4.1-uclibc-1.0.12-binutils-2.25-NPTL.Rel1.8.tar.bz2
-		fi
-
-		if [ $install_arm_glib -eq 1 ]; then
-			echo "Installing ARM Glibc toolchain"
-			wget -nv https://download.iopsys.eu/iopsys/toolchain/crosstools-arm-gcc-5.3-linux-4.1-glibc-2.22-binutils-2.25.Rel1.8.tar.bz2
-			tar -Pjxf crosstools-arm-gcc-5.3-linux-4.1-glibc-2.22-binutils-2.25.Rel1.8.tar.bz2
-			rm crosstools-arm-gcc-5.3-linux-4.1-glibc-2.22-binutils-2.25.Rel1.8.tar.bz2
-		fi
-		if [ $install_arm_gcc_55 -eq 1 ]; then
-			echo "Installing ARM gcc 5.5 toolchain"
-			wget -nv https://download.iopsys.eu/iopsys/toolchain/crosstools-arm-gcc-5.5-linux-4.1-glibc-2.26-binutils-2.28.1.tar.bz2
-			tar -Pjxf crosstools-arm-gcc-5.5-linux-4.1-glibc-2.26-binutils-2.28.1.tar.bz2
-			rm crosstools-arm-gcc-5.5-linux-4.1-glibc-2.26-binutils-2.28.1.tar.bz2
-		fi
-		if [ $install_aarch64_gcc_55 -eq 1 ]; then
-			echo "Installing aarch64 gcc 5.5 toolchain"
-			wget -nv https://download.iopsys.eu/iopsys/toolchain/crosstools-aarch64-gcc-5.5-linux-4.1-glibc-2.26-binutils-2.28.1.tar.bz2
-			tar -Pjxf crosstools-aarch64-gcc-5.5-linux-4.1-glibc-2.26-binutils-2.28.1.tar.bz2
-			rm crosstools-aarch64-gcc-5.5-linux-4.1-glibc-2.26-binutils-2.28.1.tar.bz2
-		fi
-
-
+        if [ $install_arm -eq 1 ]; then
+            echo "Installing ARM toolchain"
+            download_extract_brcm_toolchain \
+                https://download.iopsys.eu/iopsys/toolchain/crosstools-arm-gcc-9.2-linux-4.19-glibc-2.30-binutils-2.32.Rel1.12.tar.bz2 \
+                1b5118bd3e9488f5436fb1e94f5837d2cc7b6e1c45db04e5966969a46942403f
+        fi
+        if [ $install_aarch64 -eq 1 ]; then
+            echo "Installing aarch64 toolchain"
+            download_extract_brcm_toolchain \
+                https://download.iopsys.eu/iopsys/toolchain/crosstools-aarch64-gcc-9.2-linux-4.19-glibc-2.30-binutils-2.32.Rel1.12.tar.bz2 \
+                2f60b8e01e02c928481ff3fb47052a7134c0499c1ccc26a9ddfb8b527008a115
+        fi
 	fi
 }
 
