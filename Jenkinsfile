@@ -566,15 +566,15 @@ def our_stages(boards){
 				}
 			}
 
-			// if ( access_level == "public" ) {
-			//	echo "Copying tarballs to public mirror"
-			//	/* Copy tar files to mirror but skip tar files with a git commit id. */
-			//	sh 'for file in dl/*; do \
-			//	if [ ! $(echo $file | sed -nr \'/[-_][0-9a-f]{40}.tar.gz/p\') ]; then	\
-			//	scp -r $file god@download.iopsys.eu:/var/www/html/iopsys/mirror/; \
-			//	fi;						\
-			//	done'
-			// }
+			if ( access_level == "public" ) {
+				echo "Copying tarballs to public mirror"
+				/* Copy tar files to mirror but skip tar files with a git commit id. */
+				sh 'for file in dl/*; do \
+				if [ ! $(echo $file | sed -nr \'/[-_][0-9a-f]{40}.tar.gz/p\') ]; then	\
+				scp -r $file god@download.iopsys.eu:/var/www/html/iopsys/mirror/; \
+			   fi;						\
+			done'
+		   	}
 			echo "Done"
 		}
 
