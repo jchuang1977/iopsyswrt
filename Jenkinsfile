@@ -450,7 +450,7 @@ def our_stages(boards){
 				def img_upload_path = "${IOPSYS_FIRMWARE_PATH}/${build_type}/IOP${iopsys_version}/${dirname}/"
 
 				/* Used for stage Test */
-				def img_filename = sh (script: 'basename $(ls -t ./bin/targets/'+target+'/'+subtarget+'/'+filename+'-*.[yp]* | head -n1)', returnStdout: true).trim()
+				def img_filename = sh (script: 'basename $(ls -t ./bin/targets/'+target+'/'+subtarget+'/'+filename+'-*.+(y3|pkgtb) | head -n1)', returnStdout: true).trim()
 				img_server_path = "${IOPSYS_FIRMWARE_URL}/${build_type}/IOP${iopsys_version}/${dirname}/${img_filename}"
 
 				if ( customer != "" ) {
