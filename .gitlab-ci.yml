@@ -47,6 +47,7 @@ dg400prime:
   artifacts:
     paths:
       - bin/targets/*/*/*.y3
+      - bin/targets/*/*/*.pkgtb
     expire_in: 2 week
   rules:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
