@@ -52,3 +52,23 @@ dg400prime:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
   interruptible: true
+
+ex400:
+  stage: firmware
+  tags:
+    - docker
+  image:
+    name: ${REGISTRY_REPOSITORY}
+  script:
+    - echo "https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}" > ~/.git-credentials
+    - ./iop bootstrap
+    - ./iop feeds_update
+    - ./iop genconfig -c ex400
+    - make -j$(nproc)
+  artifacts:
+    paths:
+      - bin/targets/*/*/*.y3
+    expire_in: 2 week
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+  interruptible: true
