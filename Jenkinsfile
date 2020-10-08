@@ -453,7 +453,7 @@ def our_stages(boards){
 				def img_filename = sh (script: 'basename $(readlink ./bin/targets/'+target+'/'+subtarget+'/latest.{y3,pkgtb} | head -n1)', returnStdout: true).trim()
 
 				if ( img_filename == "" )
-				   def img_filename = sh (script: 'basename $(ls -1t ./bin/targets/'+target+'/'+subtarget+'/'+filename+'-*.{y3,pkgtb} | head -n1)', returnStdout: true).trim()
+				   img_filename = sh (script: 'basename $(ls -1t ./bin/targets/'+target+'/'+subtarget+'/'+filename+'-*.{y3,pkgtb} | head -n1)', returnStdout: true).trim()
 
 				img_server_path = "${IOPSYS_FIRMWARE_URL}/${build_type}/IOP${iopsys_version}/${dirname}/${img_filename}"
 
