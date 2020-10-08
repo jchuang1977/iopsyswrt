@@ -450,7 +450,11 @@ def our_stages(boards){
 				def img_upload_path = "${IOPSYS_FIRMWARE_PATH}/${build_type}/IOP${iopsys_version}/${dirname}/"
 
 				/* Used for stage Test */
-				def img_filename = sh (script: 'basename $(ls -1t ./bin/targets/'+target+'/'+subtarget+'/'+filename+'-*.{y3,pkgtb} | head -n1)', returnStdout: true).trim()
+				def img_filename = sh (script: 'basename $(readlink ./bin/targets/'+target+'/'+subtarget+'/latest.{y3,pkgtb} | head -n1)', returnStdout: true).trim()
+
+				if ( img_filename == "" )
+				   def img_filename = sh (script: 'basename $(ls -1t ./bin/targets/'+target+'/'+subtarget+'/'+filename+'-*.{y3,pkgtb} | head -n1)', returnStdout: true).trim()
+
 				img_server_path = "${IOPSYS_FIRMWARE_URL}/${build_type}/IOP${iopsys_version}/${dirname}/${img_filename}"
 
 				if ( customer != "" ) {
@@ -460,6 +464,10 @@ def our_stages(boards){
 				}
 				/* firmware file */
 				echo "Uploading the image(s) to ${img_upload_path}"
+
+				echo "filename = [${filename}]"
+
+				echo board.toUpperCase()
 
 				sh "scp ./bin/targets/${target}/${subtarget}/${filename}-* ${img_upload_path}"
 				/* store filesystem tar file also */
