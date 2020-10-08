@@ -87,14 +87,15 @@
 */
 
 broadcom_boards = [
-		"dg400prime","eg400","dg400","f104w",
+		"dg400prime","eg400","dg400","f104w","brcm_ref138_p502",
 		"dg301",
 		"dg200",
 		"tiger",
 		"panther",
-		"arc63158ref",
+		"arc63158ref","smarthub3",
 		"srcmm6752ref",
-		"xug534"
+		"xug534",
+		"disc"
 ]
 
 mediatek_boards = [ "ex400","sdx810_ap" ]
