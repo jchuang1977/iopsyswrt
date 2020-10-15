@@ -32,5 +32,6 @@ RUN echo "dev ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/10-dev
 USER dev:dev
 ENTRYPOINT ["/usr/local/bin/fixuid", "-q"]
 CMD ["bash"]
+RUN mkdir -p /home/dev/iopsyswrt /home/dev/.ssh
 WORKDIR /home/dev/iopsyswrt
-VOLUME ["/home/dev/iopsyswrt", "/home/dev/.ssh"]
+VOLUME ["/home/dev/iopsyswrt"]
