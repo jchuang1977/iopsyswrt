@@ -193,6 +193,7 @@ yarn
 download_extract_brcm_toolchain() {
     local url="$1"
     local sha256="$2"
+    local path="$3"
     local tarball="$(mktemp iop_brcm_tar.XXXXXXX)"
     wget -nv "$url" -O "$tarball"
     if ! sha256sum -c <(echo "${sha256} *${tarball}"); then
@@ -203,8 +204,14 @@ download_extract_brcm_toolchain() {
     fi
     # current 9.2/4.19/2.30/2.32 BCM toolchain has owner of files set to some employee who created the tar
     # Change to root during extraction
-    # tarballs have /opt/toolchains in them, hence the -P and no -C
-    sudo tar --owner=root --group=root -Pxf "$tarball"
+    if [ -z "$path" ]; then
+        # tarballs have /opt/toolchains in them, hence the -P and no -C
+        sudo tar --owner=root --group=root -Pxf "$tarball"
+    else
+        # the eabi toolchain is packed a bit differently
+	sudo mkdir -p "$path"
+        sudo tar --owner=root --group=root -C "$path" -xf "$tarball" --strip-components=1
+    fi
     rm -f "$tarball"
 }
 
@@ -223,7 +230,12 @@ check_brcm_tools(){
         echo "Need to install Broadcom aarch64 toolchain"
     fi
 
-    if [ $install_arm -eq 1 -o $install_aarch64 -eq 1 ]; then
+    if [ ! -d /opt/toolchains/hndtools-armeabi-2013.11 ]; then
+        install_eabi=1
+        echo "Need to install Broadcom eabi toolchain"
+    fi
+
+    if [ $install_arm -eq 1 -o $install_aarch64 -eq 1 -o $install_eabi -eq 1 ]; then
         read -p "Do you approve installation of missing toolchains (y/n): " ans
         if [ "$ans" == "y" ]; then
             echo "Downloading toolchain"
@@ -247,7 +259,14 @@ check_brcm_tools(){
                 https://download.iopsys.eu/iopsys/toolchain/crosstools-aarch64-gcc-9.2-linux-4.19-glibc-2.30-binutils-2.32.Rel1.12.tar.bz2 \
                 2f60b8e01e02c928481ff3fb47052a7134c0499c1ccc26a9ddfb8b527008a115
         fi
-	fi
+        if [ $install_eabi -eq 1 ]; then
+            echo "Installing eabi toolchain"
+            download_extract_brcm_toolchain \
+                https://download.iopsys.eu/iopsys/toolchain/arm-2013.11-24-arm-none-eabi-i686-pc-linux-gnu.tar.bz2 \
+                752a0928b220ff209e3facb20df09e53e6493285ac8b620723edab7eadb1ba8a \
+                /opt/toolchains/hndtools-armeabi-2013.11
+        fi
+    fi
 }
 
 check_gcc_version(){
