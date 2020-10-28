@@ -1,6 +1,6 @@
 stages:
   - sdk
-  - firmware
+  - build_nightlies
 
 sdk:
   stage: sdk
@@ -32,17 +32,22 @@ sdk:
         - iop
   interruptible: true
 
-dg400prime:
-  stage: firmware
+.build_board_nightly:
+  stage: build_nightlies
   tags:
     - docker
   image:
     name: ${REGISTRY_REPOSITORY}
+  cache:
+    key: IOPSYSWRT-nightly-$CI_JOB_NAME
+    paths:
+      - ./* # IOPSYSWRT whole directory
+    policy: push
   script:
     - echo "https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}" > ~/.git-credentials
     - ./iop bootstrap
     - ./iop feeds_update
-    - ./iop genconfig_min dg400prime
+    - ./iop genconfig -c $CI_JOB_NAME # Board is the same as job name
     - make -j$(nproc)
   artifacts:
     paths:
@@ -53,22 +58,8 @@ dg400prime:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
   interruptible: true
 
+dg400prime:
+  extends: .build_board_nightly
+
 ex400:
-  stage: firmware
-  tags:
-    - docker
-  image:
-    name: ${REGISTRY_REPOSITORY}
-  script:
-    - echo "https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}" > ~/.git-credentials
-    - ./iop bootstrap
-    - ./iop feeds_update
-    - ./iop genconfig -c ex400
-    - make -j$(nproc)
-  artifacts:
-    paths:
-      - bin/targets/*/*/*.y3
-    expire_in: 2 week
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "schedule"'
-  interruptible: true
+  extends: .build_board_nightly
