@@ -13,7 +13,6 @@
 /feeds
 /feeds.conf
 /files
-/themes
 /overlay
 /package/feeds
 /package/openwrt-packages
