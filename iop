@@ -183,6 +183,9 @@ yarn
 	done
     fi
 
+    # Create the yarn symlink if it's missing
+    [ -e "/usr/local/bin/yarn" ] || sudo ln -s /usr/local/lib/node_modules/yarn/bin/yarn /usr/local/bin/yarn
+
     # In Ubuntu 20.04, node-less must be installed explicitly
     sudo apt install -y node-less
 
