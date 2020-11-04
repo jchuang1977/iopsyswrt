@@ -128,14 +128,14 @@ libyajl-dev
 
 function upgrade_nodejs()
 {
-	local node_ver=$(nodejs --version)
+	local node_ver=$(node --version)
 	case "$node_ver" in
-		v10*) return
+		v14*) return
 	esac
-	echo "Nodejs package needs to be upgraded to version 10"
+	echo "Nodejs package needs to be upgraded to version 14"
 	read -p "Do you approve upgrade of this package (y/n): " ans
 	if [ "$ans" == "y" ]; then
-		curl -sL https://deb.nodesource.com/setup_10.x -o nodesource_setup.sh
+		curl -sL https://deb.nodesource.com/setup_14.x -o nodesource_setup.sh
 		sudo bash nodesource_setup.sh
 		sudo apt-get install -y nodejs
 		rm -f nodesource_setup.sh
