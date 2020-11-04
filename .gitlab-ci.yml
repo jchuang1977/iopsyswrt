@@ -63,3 +63,9 @@ dg400prime:
 
 ex400:
   extends: .build_board_nightly
+
+smarthub3:
+  extends: .build_board_nightly
+
+disc:
+  extends: .build_board_nightly
