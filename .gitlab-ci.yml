@@ -37,7 +37,7 @@ sdk:
   tags:
     - docker
   image:
-    name: ${REGISTRY_REPOSITORY}
+    name: registry.iopsys.eu:5000/iopsys/build
   cache:
     key: IOPSYSWRT-nightly-$CI_JOB_NAME
     paths:
