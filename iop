@@ -55,6 +55,7 @@ bc
 bison
 build-essential
 ccache
+cpio
 curl
 dialog
 execstack
