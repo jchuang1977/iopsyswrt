@@ -1,9 +1,9 @@
 stages:
-  - sdk
+  - build_docker_image
   - build_nightlies
 
-sdk:
-  stage: sdk
+build_docker_image:
+  stage: build_docker_image
   tags:
     - docker
   image:
