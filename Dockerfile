@@ -1,12 +1,17 @@
 FROM ubuntu:20.04
 
-# Install prerequisites for the "iop" script
+# Install prerequisites for the "iop" script and iopsys-taas
 RUN dpkg --add-architecture i386 && \
     apt-get -y update && \
     apt-get -y install \
         locales \
         sudo \
-        wget
+        wget \
+        expect \
+        socat \
+        curl \
+        sshpass \
+        trickle
 
 # 1. Create new unprivileged user "dev"
 # 2. Install fixuid to accomodate for the host machine UID/GID
