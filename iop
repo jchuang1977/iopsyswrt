@@ -85,6 +85,8 @@ uuid-dev
 wget
 zlib1g-dev
 xxd
+cmake
+quilt
 "
     local packages_perl="libconvert-binary-c-perl libdigest-crc-perl"
     local packages_npm="nodejs npm yui-compressor"
