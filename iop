@@ -225,6 +225,7 @@ download_extract_brcm_toolchain() {
 check_brcm_tools(){
     local install_arm=0
     local install_aarch64=0
+    local install_eabi=0
 
     if [ ! -d /opt/toolchains/crosstools-arm-gcc-9.2-linux-4.19-glibc-2.30-binutils-2.32 ]; then
         install_arm=1
