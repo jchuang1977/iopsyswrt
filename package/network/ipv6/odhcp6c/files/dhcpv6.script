@@ -136,6 +136,9 @@ setup_interface () {
 		else
 			for prefix in $PREFIXES $ADDRESSES; do
 				local paddr="${prefix%%,*}"
+				# Add a route without source first, in case the source is invalid
+				proto_add_ipv6_route "$addr" "$mask" "$gw" "$metric" "$valid"
+				# This will replace the route if a valid source is given
 				proto_add_ipv6_route "$addr" "$mask" "$gw" "$metric" "$valid" "$paddr"
 			done
 		fi
