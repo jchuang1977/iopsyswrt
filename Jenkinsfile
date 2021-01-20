@@ -47,27 +47,21 @@
 
 
          Boards:
-		dg301
-
-		dg200
-
 		dg400prime
 		eg400
 		dg400
-		f104w
 
 		tiger
 
 		panther
 
-		arc63158ref
+		smarthub3
 
-		srcmm6752ref
+		disc
 
 		xug534
 
 		ex400
-		sdx810_ap
 
 		easy350
 		norrland
@@ -87,18 +81,15 @@
 */
 
 broadcom_boards = [
-		"dg400prime","eg400","dg400","f104w","brcm_ref138_p502",
-		"dg301",
-		"dg200",
+		"smarthub3",
+		"disc",
+		"dg400prime","eg400","dg400","f104w",
 		"tiger",
 		"panther",
-		"arc63158ref","smarthub3",
-		"srcmm6752ref",
-		"xug534",
-		"disc"
+		"xug534"
 ]
 
-mediatek_boards = [ "ex400","sdx810_ap" ]
+mediatek_boards = [ "ex400" ]
 
 intel_boards = [ "easy350", "norrland", "easy550", "speedport_smart3" ]
 
