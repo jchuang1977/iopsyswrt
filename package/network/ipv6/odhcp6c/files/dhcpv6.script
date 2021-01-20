@@ -134,12 +134,16 @@ setup_interface () {
 		if [ -z "$gw" -o "$duplicate" = 1 ]; then
 			proto_add_ipv6_route "$addr" "$mask" "$gw" "$metric" "$valid"
 		else
+			# add a non-source specific route first in case the supplied source is invalid
+			proto_add_ipv6_route "$addr" "$mask" "$gw" "$metric" "$valid"
+			# workaround for netifd issue with renewal of routes
+			ip -6 route replace "$addr"/"$mask" via "$gw" dev "$device" proto ra metric "$metric" expires "$valid"
 			for prefix in $PREFIXES $ADDRESSES; do
 				local paddr="${prefix%%,*}"
-				# Add a route without source first, in case the source is invalid
-				proto_add_ipv6_route "$addr" "$mask" "$gw" "$metric" "$valid"
-				# This will replace the route if a valid source is given
+				# if the source is valid this will replace any previous route with same destination and metric
 				proto_add_ipv6_route "$addr" "$mask" "$gw" "$metric" "$valid" "$paddr"
+				# workaround for netifd issue with renewal of routes
+				ip -6 route replace "$addr"/"$mask" via "$gw" dev "$device" proto ra metric "$metric" expires "$valid" src "$paddr"
 			done
 		fi
 	done
