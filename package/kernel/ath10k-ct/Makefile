@@ -109,6 +109,8 @@ ifneq ($(findstring c,$(OPENWRT_VERBOSE)),)
   CT_MAKEDEFS += V=1
 endif
 
+include $(INCLUDE_DIR)/broadcom.mk
+
 define Build/Compile
 	+$(MAKE) $(CT_MAKEDEFS) $(PKG_JOBS) -C "$(LINUX_DIR)" \
 		$(KERNEL_MAKE_FLAGS) \

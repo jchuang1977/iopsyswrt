@@ -179,6 +179,8 @@ PKG_EXTRA_CFLAGS:= \
 	-DBACKPORTED_KERNEL_VERSION=\\\"$(PKG_SOURCE_VERSION)\\\" \
 	-DBACKPORTS_VERSION=\\\"unknown\\\" \
 
+include $(INCLUDE_DIR)/broadcom.mk
+
 define Build/Compile
 	$(MAKE) -C "$(LINUX_DIR)" \
 		$(KERNEL_MAKE_FLAGS) \

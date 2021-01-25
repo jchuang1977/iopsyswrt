@@ -25,6 +25,8 @@ define KernelPackage/i2c-gpio-custom/description
  Kernel module for register a custom i2c-gpio platform device.
 endef
 
+include $(INCLUDE_DIR)/broadcom.mk
+
 EXTRA_KCONFIG:= \
 	CONFIG_I2C_GPIO_CUSTOM=m
 

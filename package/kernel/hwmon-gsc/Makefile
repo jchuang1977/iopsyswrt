@@ -18,6 +18,8 @@ define KernelPackage/hwmon-gsc/description
   Kernel module for the Gateworks System Controller chips.
 endef
 
+include $(INCLUDE_DIR)/broadcom.mk
+
 define Build/Compile
 	$(MAKE) -C "$(LINUX_DIR)" \
 		$(KERNEL_MAKE_FLAGS) \

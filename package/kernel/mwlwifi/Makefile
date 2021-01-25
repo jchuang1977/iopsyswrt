@@ -41,6 +41,8 @@ NOSTDINC_FLAGS = \
 	-I$(STAGING_DIR)/usr/include/mac80211 \
 	-include backport/backport.h
 
+include $(INCLUDE_DIR)/broadcom.mk
+
 define Build/Compile
 	+$(MAKE) $(PKG_JOBS) -C "$(LINUX_DIR)" \
 		$(KERNEL_MAKE_FLAGS) \

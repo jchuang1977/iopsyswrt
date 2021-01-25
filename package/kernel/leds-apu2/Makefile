@@ -29,6 +29,8 @@ define KernelPackage/leds-apu2/description
   Driver for the PC Engines APU2/APU3 LEDs & Reset Button.
 endef
 
+include $(INCLUDE_DIR)/broadcom.mk
+
 EXTRA_KCONFIG:= \
 	CONFIG_LEDS_APU2=m
 

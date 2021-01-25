@@ -24,6 +24,9 @@ define KernelPackage/nat46
 endef
 
 include $(INCLUDE_DIR)/kernel-defaults.mk
+include $(INCLUDE_DIR)/broadcom.mk
+
+$(info nat46: KERNEL_MAKE is $(KERNEL_MAKE))
 
 define Build/Compile
 	$(KERNEL_MAKE) SUBDIRS="$(PKG_BUILD_DIR)/nat46/modules" \

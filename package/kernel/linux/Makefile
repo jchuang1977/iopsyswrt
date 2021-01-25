@@ -23,6 +23,8 @@ export SHELL:=/bin/sh
 
 include $(INCLUDE_DIR)/package.mk
 
+include $(INCLUDE_DIR)/broadcom.mk
+
 ifeq ($(DUMP),)
   STAMP_BUILT:=$(STAMP_BUILT)_$(shell $(SCRIPT_DIR)/kconfig.pl $(LINUX_DIR)/.config | mkhash md5)
   -include $(LINUX_DIR)/.config

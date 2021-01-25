@@ -78,6 +78,8 @@ define KernelPackage/sangam-atm-annex-a/config
 $(call KernelPackage/sangam-atm/config)
 endef
 
+include $(INCLUDE_DIR)/broadcom.mk
+
 define Build/Compile
 	$(MAKE) -C "$(LINUX_DIR)" \
 		$(KERNEL_MAKE_FLAGS) \

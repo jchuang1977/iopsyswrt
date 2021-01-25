@@ -33,6 +33,8 @@ KernelPackage/ltq-atm-vr9=$(call KernelPackage/ltq-atm-template,vr9,TARGET_lanti
 define Build/Configure
 endef
 
+include $(INCLUDE_DIR)/broadcom.mk
+
 define Build/Compile
 	cd $(LINUX_DIR); \
 		ARCH=mips CROSS_COMPILE="$(KERNEL_CROSS)" \

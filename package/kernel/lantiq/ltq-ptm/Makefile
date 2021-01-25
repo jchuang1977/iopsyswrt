@@ -42,6 +42,8 @@ KernelPackage/ltq-ptm-vr9=$(call KernelPackage/ltq-ptm-template,vr9,xrx200)
 define Build/Configure
 endef
 
+include $(INCLUDE_DIR)/broadcom.mk
+
 define Build/Compile
 	cd $(LINUX_DIR); \
 		ARCH=mips CROSS_COMPILE="$(KERNEL_CROSS)" \

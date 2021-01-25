@@ -33,6 +33,8 @@ KernelPackage/ltq-adsl-ase-mei=$(call KernelPackage/ltq-adsl-mei-template,ase,TA
 define Build/Configure
 endef
 
+include $(INCLUDE_DIR)/broadcom.mk
+
 define Build/Compile
 	cd $(LINUX_DIR); \
 		ARCH=mips CROSS_COMPILE="$(KERNEL_CROSS)" \

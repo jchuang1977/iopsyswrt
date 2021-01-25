@@ -36,6 +36,8 @@ MAKE_OPTS:= \
 	$(KERNEL_MAKE_FLAGS) \
 	SUBDIRS="$(PKG_BUILD_DIR)"
 
+include $(INCLUDE_DIR)/broadcom.mk
+
 define Build/Compile
 	$(MAKE) -C "$(LINUX_DIR)" \
 		$(MAKE_OPTS) \

@@ -25,6 +25,9 @@ PKG_BUILD_DIR:=$(KERNEL_BUILD_DIR)/$(PKG_NAME)-$(PKG_NAME)-$(PKG_VERSION)
 
 include $(INCLUDE_DIR)/package.mk
 
+include $(INCLUDE_DIR)/broadcom.mk
+
+
 define KernelPackage/cryptodev
   SUBMENU:=Cryptographic API modules
   TITLE:=Driver for cryptographic acceleration
@@ -43,6 +46,8 @@ endef
 
 define Build/Configure
 endef
+
+
 
 define Build/Compile
 	$(MAKE) -C $(PKG_BUILD_DIR) \

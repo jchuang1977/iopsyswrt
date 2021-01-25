@@ -30,6 +30,7 @@ define KernelPackage/sched-cake
 endef
 
 include $(INCLUDE_DIR)/kernel-defaults.mk
+include $(INCLUDE_DIR)/broadcom.mk
 
 define KernelPackage/sched-cake/description
   Common Applications Kept Enhanced fq_codel/blue derived shaper
