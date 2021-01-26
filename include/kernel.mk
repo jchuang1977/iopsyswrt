@@ -22,6 +22,16 @@ ifeq ($(__target_inc),)
   endif
 endif
 
+# This is necessary for the below code to take in account bcmkernel's linux location
+ifeq ($(CONFIG_DEFAULT_bcmkernel),y)
+ifneq ($(PKG_NAME),kernel)
+ifneq ($(PKG_NAME),)
+  LINUX_DIR := $(BUILD_DIR)/bcmkernel/bcm963xx/kernel/linux-4.19
+  LINUX_VERSION := $(shell cat $(BUILD_DIR)/bcmkernel/bcm963xx/kernel/linux-*/include/config/kernel.release)
+endif
+endif
+endif
+
 ifeq ($(DUMP),1)
   KERNEL?=<KERNEL>
   BOARD?=<BOARD>
@@ -168,6 +178,11 @@ define KernelPackage/Defaults
   AUTOLOAD:=
   MODPARAMS:=
   PKGFLAGS+=nonshared
+  ifeq ($(CONFIG_DEFAULT_bcmkernel),y)
+    DEPENDS+=bcmkernel
+  else
+    EXTRA_DEPENDS:=kernel (=$(LINUX_VERSION)-$(LINUX_RELEASE)-$(LINUX_VERMAGIC))
+  endif
 endef
 
 # 1: name
@@ -302,3 +317,4 @@ kernel_patchver_eq=$(call kernel_version_cmp,-eq,$(KERNEL_PATCHVER),$(1))
 kernel_patchver_le=$(call kernel_version_cmp,-le,$(KERNEL_PATCHVER),$(1))
 kernel_patchver_lt=$(call kernel_version_cmp,-lt,$(KERNEL_PATCHVER),$(1))
 
+PKG_BUILD_DEPENDS += DEFAULT_bcmkernel:bcmkernel
