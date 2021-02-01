@@ -43,8 +43,6 @@ define KernelPackage/ltq-dsl/config
 	source "$(SOURCE)/Config.in"
 endef
 
-include $(INCLUDE_DIR)/broadcom.mk
-
 IFX_DSL_MAX_DEVICE=1
 IFX_DSL_LINES_PER_DEVICE=1
 IFX_DSL_CHANNELS_PER_LINE=1

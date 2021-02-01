@@ -40,8 +40,6 @@ define KernelPackage/ltq-tapi/config
 	source "$(SOURCE)/Config.in"
 endef
 
-include $(INCLUDE_DIR)/broadcom.mk
-
 CONFIGURE_ARGS += \
 	ARCH=$(LINUX_KARCH) \
 	--enable-linux-26 \

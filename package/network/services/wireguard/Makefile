@@ -25,8 +25,6 @@ PKG_BUILD_DIR:=$(KERNEL_BUILD_DIR)/wireguard-linux-compat-$(PKG_VERSION)
 PKG_BUILD_PARALLEL:=1
 PKG_USE_MIPS16:=0
 
-include $(INCLUDE_DIR)/broadcom.mk
-
 # WireGuard's makefile needs this to know where to build the kernel module
 export KERNELDIR:=$(LINUX_DIR)
 

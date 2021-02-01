@@ -56,8 +56,6 @@ endef
 MAKE_FLAGS += \
 	SHELL="$(BASH)"
 
-include $(INCLUDE_DIR)/broadcom.mk
-
 CONFIGURE_ARGS += \
 	--enable-kernelincl="$(LINUX_DIR)/include" \
 	--enable-device=vr9 \

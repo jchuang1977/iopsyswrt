@@ -21,8 +21,6 @@ define KernelPackage/rtc-rv5c386a
   FILES:=$(PKG_BUILD_DIR)/rtc.ko
 endef
 
-include $(INCLUDE_DIR)/broadcom.mk
-
 define Build/Compile
 	$(MAKE) -C "$(LINUX_DIR)" \
 		$(KERNEL_MAKE_FLAGS) \

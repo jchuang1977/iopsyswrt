@@ -33,8 +33,6 @@ define KernelPackage/ltq-ifxos
   AUTOLOAD:=$(call AutoLoad,10,drv_ifxos)
 endef
 
-include $(INCLUDE_DIR)/broadcom.mk
-
 CONFIGURE_ARGS += \
 	ARCH=$(LINUX_KARCH) \
 	--enable-linux-26 \

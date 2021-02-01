@@ -25,15 +25,12 @@ define KernelPackage/w1-gpio-custom/description
  Kernel module to register a custom w1-gpio platform device.
 endef
 
-include $(INCLUDE_DIR)/broadcom.mk
-
 EXTRA_KCONFIG:= \
 	CONFIG_W1_MASTER_GPIO_CUSTOM=m
 
 EXTRA_CFLAGS:= \
 	$(patsubst CONFIG_%, -DCONFIG_%=1, $(patsubst %=m,%,$(filter %=m,$(EXTRA_KCONFIG)))) \
 	$(patsubst CONFIG_%, -DCONFIG_%=1, $(patsubst %=y,%,$(filter %=y,$(EXTRA_KCONFIG))))
-
 
 MAKE_OPTS:= \
 	$(KERNEL_MAKE_FLAGS) \

@@ -45,8 +45,6 @@ endef
 MAKE_FLAGS += \
 	SHELL="$(BASH)"
 
-include $(INCLUDE_DIR)/broadcom.mk
-
 CONFIGURE_ARGS += --enable-kernel-include="$(LINUX_DIR)/include" \
 	--with-max-device="1" \
 	--with-lines-per-device="1" \

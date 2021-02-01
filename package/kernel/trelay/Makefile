@@ -30,7 +30,6 @@ from.
 endef
 
 include $(INCLUDE_DIR)/kernel-defaults.mk
-include $(INCLUDE_DIR)/broadcom.mk
 
 define Build/Compile
 	$(KERNEL_MAKE) SUBDIRS="$(PKG_BUILD_DIR)" modules
