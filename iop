@@ -87,6 +87,7 @@ zlib1g-dev
 xxd
 cmake
 quilt
+cryptsetup
 "
     local packages_perl="libconvert-binary-c-perl libdigest-crc-perl"
     local packages_npm="nodejs npm yui-compressor"
@@ -445,5 +446,3 @@ done
 printf "Error: no such command $arg\n\n"
 dump_commands
 exit -1
-
-
