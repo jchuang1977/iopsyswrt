@@ -88,6 +88,8 @@ xxd
 cmake
 quilt
 cryptsetup
+libseccomp-dev
+libyajl-dev
 "
     local packages_perl="libconvert-binary-c-perl libdigest-crc-perl"
     local packages_npm="nodejs npm yui-compressor"
