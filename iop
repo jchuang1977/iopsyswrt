@@ -88,6 +88,7 @@ xxd
 cmake
 quilt
 cryptsetup
+libcap-dev
 libseccomp-dev
 libyajl-dev
 "
