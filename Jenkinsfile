@@ -47,19 +47,23 @@
 
 
          Boards:
-		dg400prime
-		eg400
-		dg400
-
-		tiger
-
-		panther
-
 		smarthub3
 
 		disc
 
+		eagle
+
+		panther
+
+		panda
+
+		tiger
+
 		xug534
+
+		dg400prime
+		eg400
+		dg400
 
 		ex400
 
@@ -83,10 +87,12 @@
 broadcom_boards = [
 		"smarthub3",
 		"disc",
-		"dg400prime","eg400","dg400","f104w",
-		"tiger",
+		"eagle",
+		"panda",
 		"panther",
-		"xug534"
+		"tiger",
+		"xug534",
+		"dg400prime","eg400","dg400","f104w"
 ]
 
 mediatek_boards = [ "ex400" ]
