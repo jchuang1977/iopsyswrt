@@ -120,6 +120,11 @@ menuconfig DEVEL
 		string "URI of kernel tarball" if DEVEL
 		default ""
 
+	config KERNEL_GIT_MIRROR_HASH
+		string "Enter hash of Git kernel tree source checkout tarball" if DEVEL
+		depends on (KERNEL_GIT_CLONE_URI != "")
+		default ""
+
 	config BUILD_LOG
 		bool "Enable log files during build process" if DEVEL
 		help
