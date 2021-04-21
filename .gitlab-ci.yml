@@ -13,3 +13,9 @@ SMARTHUB3:
 
 DISC:
   extends: .supported_board
+
+EAGLE:
+  extends: .supported_board
+
+PANTHER:
+  extends: .supported_board
