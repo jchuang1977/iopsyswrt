@@ -28,7 +28,7 @@ COPY --chown=dev:dev docker/gitconfig /home/dev/.gitconfig
 COPY iop /
 
 RUN ln -fs /usr/share/zoneinfo/Etc/UTC /etc/localtime && \
-    yes | /iop setup_host && \
+    yes | DEBIAN_FRONTEND=noninteractive /iop setup_host && \
     rm /iop
 
 RUN echo "dev ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/10-dev
