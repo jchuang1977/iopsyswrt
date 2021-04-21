@@ -27,8 +27,8 @@ COPY --chown=dev:dev docker/gitconfig /home/dev/.gitconfig
 # Run "iop setup_host" inside image to install necessary SDK dependencies
 COPY iop /
 
-RUN ln -fs /usr/share/zoneinfo/Etc/UTC /etc/localtime && \
-    yes | DEBIAN_FRONTEND=noninteractive /iop setup_host && \
+RUN export DEBIAN_FRONTEND=noninteractive ; ln -fs /usr/share/zoneinfo/Etc/UTC /etc/localtime && \
+    yes | /iop setup_host && \
     rm /iop
 
 RUN echo "dev ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/10-dev
