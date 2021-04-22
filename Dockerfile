@@ -27,7 +27,8 @@ COPY --chown=dev:dev docker/gitconfig /home/dev/.gitconfig
 # Run "iop setup_host" inside image to install necessary SDK dependencies
 COPY iop /
 
-RUN export DEBIAN_FRONTEND=noninteractive && ln -fs /usr/share/zoneinfo/Etc/UTC /etc/localtime && \
+RUN echo 'debconf debconf/frontend select Noninteractive' | sudo debconf-set-selections && \
+    ln -fs /usr/share/zoneinfo/Etc/UTC /etc/localtime && \
     yes | /iop setup_host && \
     rm /iop
 
