@@ -62,8 +62,5 @@ endef
 
 $(eval $(if $(DUMP),,$(call BuildPackage,kernel)))
 
--include $(TOPDIR)/.config
-ifeq ($(CONFIG_TARGET_iopsys_brcm63xx_arm)$(CONFIG_TARGET_iopsys_brcm63xx_mips),)
 include $(sort $(wildcard ./modules/*.mk))
 -include $(TOPDIR)/target/linux/*/modules.mk
-endif
