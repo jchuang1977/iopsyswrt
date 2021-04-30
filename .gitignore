@@ -28,6 +28,10 @@ TAGS*~
 git-src
 .project
 .cproject
+.ccache
+.vscode
+
+
 .genconfig_config_bak
 .current_config_file
 .genconfig.config

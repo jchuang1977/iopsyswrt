@@ -49,10 +49,10 @@ HOST_EXTRACFLAGS=
 
 LINUX_HAS_HEADERS_INSTALL:=y
 
-KMAKE := $(MAKE) -C $(HOST_BUILD_DIR) \
+HOST_KMAKE := $(MAKE) -C $(HOST_BUILD_DIR) \
 	$(KERNEL_MAKE_FLAGS) \
 	CC="$(KERNEL_CC)" \
-	CFLAGS="$(TARGET_CFLAGS)"
+	HOSTCFLAGS="$(HOST_CFLAGS)"
 
 define Host/Configure/all
 	mkdir -p $(BUILD_DIR_TOOLCHAIN)/linux-dev
@@ -60,7 +60,7 @@ define Host/Configure/all
 	if [ -d .git ]; then \
 		git checkout $(CONFIG_KERNEL_GIT_BRANCH); \
 	fi
-	$(KMAKE) \
+	$(HOST_KMAKE) \
 		INSTALL_HDR_PATH="$(BUILD_DIR_TOOLCHAIN)/linux-dev/" \
 		headers_install
 endef
@@ -99,13 +99,13 @@ endef
 ifeq ($(CONFIG_TARGET_iopsys_brcm63xx_arm)$(CONFIG_TARGET_iopsys_brcm63xx_mips),)
  define Host/Configure
 	env
-	yes '' | $(KMAKE) oldconfig
+	yes '' | $(HOST_KMAKE) oldconfig
 	$(call Host/Configure/all)
 	$(call Host/Configure/post/$(ARCH))
  endef
 else
  define Host/Configure
-	$(KMAKE) defconfig
+	$(HOST_KMAKE) defconfig
 	$(call Host/Configure/all)
 	$(call Host/Configure/post/$(ARCH))
  endef

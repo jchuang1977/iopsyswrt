@@ -9,18 +9,17 @@ include $(TOPDIR)/rules.mk
 include $(INCLUDE_DIR)/kernel.mk
 
 PKG_NAME:=strace
-PKG_VERSION:=5.0
+PKG_VERSION:=5.10
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
 PKG_SOURCE_URL:=https://strace.io/files/$(PKG_VERSION)
-PKG_HASH:=3b7ad77eb2b81dc6078046a9cc56eed5242b67b63748e7fc28f7c2daf4e647da
-
-PKG_LICENSE:=BSD-3c
-PKG_LICENSE_FILES:=COPYRIGHT
-PKG_CPE_ID:=cpe:/a:paul_kranenburg:strace
+PKG_HASH:=fe3982ea4cd9aeb3b4ba35f6279f0b577a37175d3282be24b9a5537b56b8f01c
 
 PKG_MAINTAINER:=Felix Fietkau <nbd@nbd.name>
+PKG_LICENSE:=LGPL-2.1-or-later
+PKG_LICENSE_FILES:=COPYING
+PKG_CPE_ID:=cpe:/a:paul_kranenburg:strace
 
 PKG_FIXUP:=autoreconf
 PKG_INSTALL:=1
@@ -33,10 +32,6 @@ include $(INCLUDE_DIR)/package.mk
 
 HOST_CFLAGS += -I$(LINUX_DIR)/user_headers/include
 
-ifeq ($(ARCH),aarch64)
-  CONFIGURE_ARGS += --enable-mpers=check
-endif
-
 CONFIGURE_VARS+= \
 	LDFLAGS_FOR_BUILD="$(HOST_LDFLAGS)" \
 	CPPFLAGS_FOR_BUILD="$(HOST_CPPFLAGS)" \
@@ -47,13 +42,13 @@ define Package/strace
   SECTION:=utils
   CATEGORY:=Utilities
   TITLE:=System call tracer
+  URL:=https://strace.io/
   DEPENDS:=+STRACE_LIBDW:libdw +STRACE_LIBUNWIND:libunwind
-  URL:=http://strace.sourceforge.net/
 endef
 
 define Package/strace/description
-A useful diagnostic, instructional, and debugging tool. Allows you to track what
-system calls a program makes while it is running.
+  A useful diagnostic, instructional, and debugging tool. Allows you to track what
+  system calls a program makes while it is running.
 endef
 
 define Package/strace/config
@@ -74,7 +69,8 @@ endef
 
 CONFIGURE_ARGS += \
 	--with-libdw=$(if $(CONFIG_STRACE_LIBDW),yes,no) \
-	--with-libunwind=$(if $(CONFIG_STRACE_LIBUNWIND),yes,no)
+	--with-libunwind=$(if $(CONFIG_STRACE_LIBUNWIND),yes,no) \
+	--enable-mpers=no
 
 MAKE_FLAGS := \
 	CCOPT="$(TARGET_CFLAGS)"

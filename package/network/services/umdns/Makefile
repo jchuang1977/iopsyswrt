@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2014 OpenWrt.org
+# Copyright (C) 2014-2021 OpenWrt.org
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -8,13 +8,13 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=umdns
-PKG_RELEASE:=1
+PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_URL=$(PROJECT_GIT)/project/mdnsd.git
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_DATE:=2020-04-25
-PKG_SOURCE_VERSION:=cdac0460ba50dc45735f0be2e19a5a8efc3dafe1
-PKG_MIRROR_HASH:=261cb929dfc03c1f293156cfdec8c2cd1541dcdc57ae42a323f9df5d26e6f7d2
+PKG_SOURCE_DATE:=2021-01-26
+PKG_SOURCE_VERSION:=78aa36b0e9808e801c527c6dc47320e593309522
+PKG_MIRROR_HASH:=241833f2bf2f3366f356703159be386862ef747d9b253af6c13555f252cc970d
 
 PKG_MAINTAINER:=John Crispin <john@phrozen.org>
 PKG_LICENSE:=LGPL-2.1
@@ -30,7 +30,7 @@ define Package/umdns
   DEPENDS:=+libubox +libubus +libblobmsg-json
 endef
 
-TARGET_CFLAGS += -I$(STAGING_DIR)/usr/include -Wno-address-of-packed-member
+TARGET_CFLAGS += -I$(STAGING_DIR)/usr/include
 
 define Package/umdns/conffiles
 /etc/config/umdns
