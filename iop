@@ -91,7 +91,6 @@ cryptsetup
 libcap-dev
 libseccomp-dev
 libyajl-dev
-libjsoncpp-dev
 "
     local packages_perl="libconvert-binary-c-perl libdigest-crc-perl"
     local packages_npm="nodejs npm yui-compressor"
