@@ -349,11 +349,22 @@ def our_stages(boards){
 		}
 
 		/*
-		  clean the
-		  bcmkernel package, if there is no bcmkernel package just ignore the error.
+		  clean the  bcmkernel package, if there is no bcmkernel package just ignore the error.
 		*/
 		echo "Doing bcmkernel clean"
 		try {sh 'make package/feeds/broadcom/bcmkernel/clean' } catch (error){}
+
+		/*
+		  clean the endptmngr package, if there is no endptmngr package just ignore the error.
+		*/
+		echo "Doing endptmngr clean"
+		try {sh 'make package/feeds/iopsys/endptmngr/clean' } catch (error){}
+
+		/*
+		  clean the asterisk package, if there is no asterisk package just ignore the error.
+		*/
+		echo "Doing asterisk clean"
+		try {sh 'make package/feeds/openwrt_telephony/asterisk/clean' } catch (error){}
 
 		if ( [ "RELEASE" ].contains(build_type)){
 		echo "Doing bin clean so that Licences reports can be generated "
