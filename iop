@@ -30,12 +30,12 @@ function dump_commands {
 function bootstrap {
 
     if [ $developer == 1 ]; then
-        ./scripts/feeds update -g
+        ./scripts/feeds update -g || exit 1
     else
-        ./scripts/feeds update
+        ./scripts/feeds update || exit 1
     fi
 
-    ./scripts/feeds install -p iopsys iop
+    ./scripts/feeds install -p iopsys iop || exit 1
 }
 
 register_command "bootstrap" "Initial command to run to install other commands"
