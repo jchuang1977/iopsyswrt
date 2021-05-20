@@ -1,0 +1,32 @@
+From 22b32bc0327b627bd3a5d4ef76d0b516443fe562 Mon Sep 17 00:00:00 2001
+From: Erik Karlsson <erik.karlsson@genexis.eu>
+Date: Thu, 20 May 2021 18:03:24 +0200
+Subject: [PATCH] ubusd: fix buffer overflow on invalid socket input
+
+When invalid input is received, for example all zeroes, the value of
+the length field of the blob header can smaller than the size of the
+header itself. This was leading to allocation of too small buffer and
+the header being written beyond its end, resulting in heap corruption
+and crash on upcoming free() call. Handle this by rejecting the
+connection when invalid length is received.
+---
+ ubusd_main.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/ubusd_main.c b/ubusd_main.c
+index c3d8049..a4e3205 100644
+--- a/ubusd_main.c
++++ b/ubusd_main.c
+@@ -132,6 +132,9 @@ retry:
+ 		if (blob_pad_len(&cl->hdrbuf.data) > UBUS_MAX_MSGLEN)
+ 			goto disconnect;
+ 
++		if (blob_raw_len(&cl->hdrbuf.data) < sizeof(cl->hdrbuf.data))
++			goto disconnect;
++
+ 		cl->pending_msg = ubus_msg_new(NULL, blob_raw_len(&cl->hdrbuf.data), false);
+ 		if (!cl->pending_msg)
+ 			goto disconnect;
+-- 
+2.25.1
+
