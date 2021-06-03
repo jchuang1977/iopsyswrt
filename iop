@@ -20,13 +20,12 @@ function register_command {
 }
 
 function dump_commands {
-    
+
     printf "Available commands:\n"
     for i in $(seq 0 $arr_index); do
         printf "   %-25s%s\n" "${command_array[$i]}" "${help_array[$i]}"
     done
 }
-
 
 # Register bootstrap command that installs other commands from feeds
 function bootstrap {
@@ -39,7 +38,6 @@ function bootstrap {
 
     ./scripts/feeds install -p iopsys iop
 }
-
 
 register_command "bootstrap" "Initial command to run to install other commands"
 
@@ -93,17 +91,16 @@ libseccomp-dev
 libyajl-dev
 "
     local packages_perl="libconvert-binary-c-perl libdigest-crc-perl"
-    local packages_npm="nodejs npm yui-compressor"
 
     # do we need 32 bit compatibility libs ?
     if [ "$(uname -m | awk '{print$1}')" == "x86_64" ]; then
 	local packages_x64="libc6-dev-i386 lib32z1 libncurses5:i386"
     fi
-    
+
     # filter out already installed packages
-    local packages_all="$packages_misc $packages_perl $packages_x64 $packages_npm"
+    local packages_all="$packages_misc $packages_perl $packages_x64"
     local needed=""
-    
+
     for pkg in $packages_all
     do
 	if ! dpkg -s $pkg >/dev/null 2>/dev/null
@@ -126,25 +123,6 @@ libyajl-dev
     fi
 }
 
-function upgrade_nodejs()
-{
-	local node_ver=$(node --version)
-	case "$node_ver" in
-		v14*) return
-	esac
-	echo "Nodejs package needs to be upgraded to version 14"
-	read -p "Do you approve upgrade of this package (y/n): " ans
-	if [ "$ans" == "y" ]; then
-		curl -sL https://deb.nodesource.com/setup_14.x -o nodesource_setup.sh
-		sudo bash nodesource_setup.sh
-		sudo apt-get install -y nodejs
-		rm -f nodesource_setup.sh
-	else
-		echo "Skipping install of node.js"
-		return
-	fi
-}
-
 check_bash()
 {
     local mysh=$(ls -hl /bin/sh | awk -F'[ ,/]' '{print$NF}')
@@ -159,46 +137,7 @@ check_bash()
 	    exit 1
 	fi
     fi
-    
 }
-
-install_npm(){
-
-    local npm_package="
-less
-uglify-js
-yarn
-"
-    local needed=""
-
-    # Filter out already installed packages 
-    for pkg in $npm_package
-    do
-	if ! npm list -g $pkg >/dev/null 2>/dev/null
-	then
-	    needed="$needed $pkg"
-	fi
-    done
-
-    # install needed packages
-    if [ -n "$needed" ]
-    then
-	echo "Need to install npm package $needed"
-	for pkg in $needed
-	do
-	    sudo npm install -g $pkg
-	done
-    fi
-
-    # Create the yarn symlink if it's missing
-    [ -e "/usr/local/bin/yarn" ] || sudo ln -s /usr/local/lib/node_modules/yarn/bin/yarn /usr/local/bin/yarn
-
-    # In Ubuntu 20.04, node-less must be installed explicitly
-    sudo apt install -y node-less
-
-    sudo chown -R $(id -u):$(id -g) "${HOME}/.npm/"
-}
-
 
 download_extract_brcm_toolchain() {
     local url="$1"
@@ -224,7 +163,6 @@ download_extract_brcm_toolchain() {
     fi
     rm -f "$tarball"
 }
-
 
 check_brcm_tools(){
     local install_arm=0
@@ -291,7 +229,7 @@ check_gcc_version(){
 
     # transform gcc-* to just a number.
     gcc_ver=$(echo $gcc_ver | cut -d- -f2)
-    
+
     if [ "$gcc_ver" != 4.8 ]; then
 	echo "Your current gcc version is $gcc_ver, but it must be changed to 4.8"
 	read -p "Do you approve this change (y/n): " ans
@@ -305,7 +243,7 @@ check_gcc_version(){
 	    if ! dpkg -s gcc-4.8-multilib >/dev/null 2>/dev/null ;then
 		sudo apt-get install gcc-4.8-multilib
 	    fi
-	    
+
 	    sudo update-alternatives --install /usr/bin/g++ c++ /usr/bin/g++-4.8 100
 	    sudo update-alternatives --install /usr/bin/g++ c++ /usr/bin/g++-$gcc_ver 90
 
@@ -337,7 +275,7 @@ restore_gcc() {
 
 	# transform gcc-* to just a number.
 	gcc_ver=$(echo $gcc_ver | cut -d- -f2)
-	
+
 	# is 4.8 the default reset back to 5 
 	if [ "$gcc_ver" = "4.8" ]; then
 	    echo "Your current gcc version is $gcc_ver that is not the distro default. set it back to default ?"
@@ -397,9 +335,7 @@ function setup_host {
 
     install_locales
     install_pkgs
-    upgrade_nodejs
     check_bash
-    install_npm
     check_brcm_tools
     #check_gcc_version
     restore_gcc
@@ -410,7 +346,6 @@ function setup_host {
     echo "You have successfully installed and configred prerequisites to be able to build an iopsys firmware"
     echo ""
     echo ""
-
 }
 
 register_command "setup_host" "Install needed packets to host machine"
@@ -418,7 +353,7 @@ register_command "setup_host" "Install needed packets to host machine"
 
 # Plugin scripts call register command to export their interface
 if [ -d package/feeds/iopsys/iop/scripts ]; then
-    
+
     for f in package/feeds/iopsys/iop/scripts/*; do
 	source $f
     done
@@ -429,8 +364,6 @@ if [ -z $arg ] || [ $arg == "--help" ]; then
     dump_commands
     exit -1
 fi
-
-
 
 # Check all registered commands for a match
 for i in $(seq 0 $arr_index); do
