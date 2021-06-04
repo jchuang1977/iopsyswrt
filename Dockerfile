@@ -34,10 +34,21 @@ RUN echo 'debconf debconf/frontend select Noninteractive' | sudo debconf-set-sel
 
 RUN echo "dev ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/10-dev
 
-
 USER dev:dev
 ENTRYPOINT ["/usr/local/bin/fixuid", "-q"]
 CMD ["bash"]
 RUN mkdir -p /home/dev/iopsyswrt /home/dev/.ssh
 WORKDIR /home/dev/iopsyswrt
 VOLUME ["/home/dev/iopsyswrt"]
+
+# install node
+ARG NODE_VERSION=14.16.1
+ENV NVM_DIR=/home/dev/.nvm
+ENV PATH="/home/dev/.nvm/versions/node/v${NODE_VERSION}/bin/:${PATH}"
+
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash && \
+    . "$NVM_DIR/nvm.sh" && \
+    nvm install ${NODE_VERSION} && \
+    nvm use v${NODE_VERSION} && \
+    nvm alias default v${NODE_VERSION} && \
+    npm install --global typescript yarn
