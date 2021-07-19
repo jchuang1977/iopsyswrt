@@ -19,3 +19,7 @@ EAGLE:
 
 PANTHER:
   extends: .supported_board
+
+PANDA:
+  extends: .supported_board
+
