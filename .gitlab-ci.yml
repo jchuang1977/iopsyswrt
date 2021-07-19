@@ -2,9 +2,6 @@ include:
   - project: devops/iopsyswrt
     file: top.yml
 
-DG400PRIME:
-  extends: .supported_board
-
 EX400:
   extends: .supported_board
 
