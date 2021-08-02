@@ -42,7 +42,7 @@ while [ -n "$1" -a -n "$2" ]; do
 			arch = \"ARM\";
 			compression = \"none\";
 			hash@1 {
-				algo = \"crc32\";
+				algo = \"sha256\";
 			};
 		};" >> ${OUTPUT}
 done
