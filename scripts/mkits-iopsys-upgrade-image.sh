@@ -38,8 +38,6 @@ while [ -n "$1" -a -n "$2" ]; do
 "		${name} {
 			description = \"${name}\";
 			data = /incbin/(\"${file}\");
-			type = \"Firmware\";
-			arch = \"ARM\";
 			compression = \"none\";
 			hash@1 {
 				algo = \"sha256\";
