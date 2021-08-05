@@ -55,6 +55,7 @@ build-essential
 ccache
 cpio
 curl
+device-tree-compiler
 dialog
 execstack
 file
