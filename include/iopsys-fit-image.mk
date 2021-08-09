@@ -30,4 +30,7 @@ define iopsys-fit-upgrade-image
 
 	PATH=$(LINUX_DIR)/scripts/dtc:$(PATH) mkimage -f $(1).its $(1).new
 	@mv $(1).new $(1)
+	# FIXME: this is prone to race-conditions when multiple
+	# images/filesystems are generated.
+	ln -sf $$(basename $@) $(BIN_DIR)/last.itb
 endef
