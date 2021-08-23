@@ -20,3 +20,5 @@ PANTHER:
 PANDA:
   extends: .supported_board
 
+ZEBRA:
+  extends: .supported_board
