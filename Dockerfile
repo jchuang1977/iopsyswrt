@@ -11,7 +11,9 @@ RUN dpkg --add-architecture i386 && \
         socat \
         curl \
         sshpass \
-        trickle
+        trickle \
+        python3-mako \
+        python3-yaml
 
 # 1. Create new unprivileged user "dev"
 # 2. Install fixuid to accomodate for the host machine UID/GID
