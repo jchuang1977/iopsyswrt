@@ -22,3 +22,6 @@ PANDA:
 
 ZEBRA:
   extends: .supported_board
+
+EN7562:
+  extends: .supported_board
