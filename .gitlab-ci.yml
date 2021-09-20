@@ -4,12 +4,16 @@ include:
 
 EX400:
   extends: .supported_board
+  variables:
+    SKIP_TEST: "true"
 
 SMARTHUB3:
   extends: .supported_board
 
 DISC:
   extends: .supported_board
+  variables:
+    SKIP_TEST: "true"
 
 EAGLE:
   extends: .supported_board
@@ -22,6 +26,8 @@ PANDA:
 
 ZEBRA:
   extends: .supported_board
+  variables:
+    SKIP_TEST: "true"
 
 EN7562:
   extends: .supported_board
