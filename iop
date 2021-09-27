@@ -68,6 +68,7 @@ gettext
 git
 automake
 gtk-doc-tools
+jq
 liblzo2-dev
 libncurses5
 libncurses5-dev
