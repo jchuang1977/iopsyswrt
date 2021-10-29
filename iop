@@ -76,6 +76,8 @@ libssl-dev
 ncurses-term
 pv
 python
+python3
+python3-cryptography
 rsync
 subversion
 svn-buildpackage
