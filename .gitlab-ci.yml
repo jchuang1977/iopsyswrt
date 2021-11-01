@@ -13,7 +13,7 @@ SMARTHUB3:
 DISC:
   extends: .supported_board
   variables:
-    SKIP_TEST: "true"
+    CUSTOMER_PROFILE: "MULTI-AP"
 
 EAGLE:
   extends: .supported_board
