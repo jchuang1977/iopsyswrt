@@ -83,6 +83,11 @@ PANTHER:
 PANDA:
   extends: .nightly
 
+KOALA:
+  extends: .nightly
+  variables:
+    SKIP_TEST: "true"
+
 ZEBRA:
   extends: .nightly
   variables:
