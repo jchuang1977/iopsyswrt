@@ -1,33 +1,92 @@
-include:
-  - project: devops/iopsyswrt
-    file: top.yml
+stages:
+  - Update docker image
+  - IOPSYSWRT
 
+.nightly:
+  stage: IOPSYSWRT
+  variables:
+    BOARD_NAME: $CI_JOB_NAME
+    BUILD_TYPE: $BUILD_TYPE
+    SKIP_TEST: "false"
+  trigger:
+    project: devops/iopsyswrt
+    strategy: depend
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+
+.continuous:
+  stage: IOPSYSWRT
+  trigger:
+    project: devops/iopsyswrt
+    strategy: depend
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      changes:
+        - feeds.conf
+
+Update Docker Image:
+  stage: Update docker image
+  tags:
+    - docker
+  image:
+    name: gcr.io/kaniko-project/executor:v1.5.2-debug
+    entrypoint: [""]
+  variables:
+    GIT_DEPTH: 1
+  script:
+    - mkdir -p /kaniko/.docker
+    - echo "{\"auths\":{\"${REGISTRY_URL}\":{\"auth\":\"${REGISTRY_AUTH}\"}}}" > /kaniko/.docker/config.json
+    - DOCKER_BASE_VERSION="$(grep -m1 '^FROM' Dockerfile | cut -d':' -f2)"
+    - |
+        /kaniko/executor \
+          --context ${CI_PROJECT_DIR} \
+          --dockerfile ${CI_PROJECT_DIR}/Dockerfile \
+          --destination ${REGISTRY_REPOSITORY}:${CI_COMMIT_SHORT_SHA} \
+          --destination ${REGISTRY_REPOSITORY}:${DOCKER_BASE_VERSION} \
+          --destination ${REGISTRY_REPOSITORY}:latest
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+      when: never
+    - if: '$CI_COMMIT_BRANCH == "devel" || $CI_COMMIT_BRANCH == "release-5.3"'
+      changes:
+        - Dockerfile
+        - docker/**
+        - iop
+  interruptible: true
+
+# Continuous Build
+SMARTHUB3_continuous:
+  extends: .continuous
+  variables:
+    BOARD_NAME: "SMARTHUB3"
+
+# Nightly
 EX400:
-  extends: .supported_board
+  extends: .nightly
   variables:
     SKIP_TEST: "true"
 
 SMARTHUB3:
-  extends: .supported_board
+  extends: .nightly
 
 DISC:
-  extends: .supported_board
+  extends: .nightly
   variables:
     CUSTOMER_PROFILE: "MULTI-AP"
 
 EAGLE:
-  extends: .supported_board
+  extends: .nightly
 
 PANTHER:
-  extends: .supported_board
+  extends: .nightly
 
 PANDA:
-  extends: .supported_board
+  extends: .nightly
 
 ZEBRA:
-  extends: .supported_board
+  extends: .nightly
   variables:
     SKIP_TEST: "true"
 
 EN7562:
-  extends: .supported_board
+  extends: .nightly
