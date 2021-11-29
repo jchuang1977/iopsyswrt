@@ -20,7 +20,7 @@ stages:
     project: devops/iopsyswrt
     strategy: depend
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "push"'
+    - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == "devel"'
       changes:
         - feeds.conf
 
