@@ -90,8 +90,6 @@ KOALA:
 
 ZEBRA:
   extends: .nightly
-  variables:
-    SKIP_TEST: "true"
 
 EN7562:
   extends: .nightly
