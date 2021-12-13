@@ -16,6 +16,10 @@ endef
 
 Hooks/Prepare/Post += git_update
 
+# Include GNU Build ID to easily match coredumps or unstripped binaries
+# to their unstripped counterparts
+TARGET_CFLAGS += -Wl,--build-id
+
 # Paths
 export IOPSYS_FEED_TARGETS = $(TOPDIR)/feeds/targets
 
