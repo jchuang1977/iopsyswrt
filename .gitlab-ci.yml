@@ -90,3 +90,8 @@ KOALA:
 
 EN7562:
   extends: .nightly
+
+TIGER:
+  extends: .nightly
+  variables:
+    SKIP_TEST: "true"
