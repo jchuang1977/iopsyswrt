@@ -68,6 +68,8 @@ EX400:
 
 SMARTHUB3:
   extends: .nightly
+  variables:
+    CUSTOMER_PROFILE: "EVAL"
 
 DISC:
   extends: .nightly
@@ -76,6 +78,8 @@ DISC:
 
 EAGLE:
   extends: .nightly
+  variables:
+    CUSTOMER_PROFILE: "EVAL"
 
 PANTHER:
   extends: .nightly
@@ -90,6 +94,8 @@ KOALA:
 
 EN7562:
   extends: .nightly
+  variables:
+    CUSTOMER_PROFILE: "EVAL"
 
 TIGER:
   extends: .nightly
