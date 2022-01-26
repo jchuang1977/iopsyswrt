@@ -260,7 +260,7 @@ proto_pppoe_teardown() {
 
 proto_pppoa_init_config() {
 	ppp_generic_init_config
-	proto_config_add_int "atmdev"
+	proto_config_add_string "atmdev"
 	proto_config_add_int "vci"
 	proto_config_add_int "vpi"
 	proto_config_add_string "encaps"
