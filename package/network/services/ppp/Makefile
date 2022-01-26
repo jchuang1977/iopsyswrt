@@ -31,6 +31,12 @@ PKG_INSTALL:=1
 
 include $(INCLUDE_DIR)/package.mk
 
+define Build/Patch
+	$(call Build/Patch/Default)
+	# Target specific patches for e.g proprietary extensions like PPPoATM on BCM
+	$(call PatchDir,$(PKG_BUILD_DIR),$(PATCH_DIR)/$(CONFIG_TARGET_BOARD),$(CONFIG_TARGET_BOARD))
+endef
+
 define Package/ppp/Default
   SECTION:=net
   CATEGORY:=Network
