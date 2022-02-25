@@ -17,8 +17,9 @@ RUN dpkg --add-architecture i386 && \
 
 # 1. Create new unprivileged user "dev"
 # 2. Install fixuid to accomodate for the host machine UID/GID
+ARG FIXUID_VERSION=0.5.1
 RUN useradd -m -s /bin/bash dev && \
-    wget -nv -O - https://github.com/boxboat/fixuid/releases/download/v0.5/fixuid-0.5-linux-amd64.tar.gz | tar -C /usr/local/bin -xzf -
+    curl -fsSL "https://github.com/boxboat/fixuid/releases/download/v${FIXUID_VERSION}/fixuid-${FIXUID_VERSION}-linux-amd64.tar.gz" | tar -C /usr/local/bin -xzf -
 
 # Copy fixuid configuration
 COPY docker/fixuid.yml /etc/fixuid/config.yml
