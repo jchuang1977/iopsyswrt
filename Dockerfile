@@ -15,6 +15,12 @@ RUN dpkg --add-architecture i386 && \
         python3-mako \
         python3-yaml
 
+# Install Node.js
+ARG NODEJS_VERSION_MAJOR=14
+RUN curl -fsSL "https://deb.nodesource.com/setup_${NODEJS_VERSION_MAJOR}.x" | bash - && \
+    apt-get install -y nodejs && \
+    npm install --global typescript yarn
+
 # 1. Create new unprivileged user "dev"
 # 2. Install fixuid to accomodate for the host machine UID/GID
 ARG FIXUID_VERSION=0.5.1
@@ -43,15 +49,3 @@ CMD ["bash"]
 RUN mkdir -p /home/dev/iopsyswrt /home/dev/.ssh
 WORKDIR /home/dev/iopsyswrt
 VOLUME ["/home/dev/iopsyswrt"]
-
-# install node
-ARG NODE_VERSION=14.16.1
-ENV NVM_DIR=/home/dev/.nvm
-ENV PATH="/home/dev/.nvm/versions/node/v${NODE_VERSION}/bin/:${PATH}"
-
-RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash && \
-    . "$NVM_DIR/nvm.sh" && \
-    nvm install ${NODE_VERSION} && \
-    nvm use v${NODE_VERSION} && \
-    nvm alias default v${NODE_VERSION} && \
-    npm install --global typescript yarn
