@@ -32,18 +32,9 @@ ifeq ($(strip $(CONFIG_EXTERNAL_KERNEL_TREE)),"")
 	$(if $(QUILT),touch $(LINUX_DIR)/.quilt_used)
     endef
   else
-ifeq ($(strip $(CONFIG_KERNEL_HTTP_WGET_URI)),"")
     define Kernel/Prepare/Default
-	git clone $(KERNEL_GIT_OPTS) $(CONFIG_KERNEL_GIT_CLONE_URI) $(LINUX_DIR) \
-	--branch $(CONFIG_KERNEL_GIT_BRANCH)
+	$(LINUX_CAT) $(DL_DIR)/$(LINUX_SOURCE) | $(TAR) -C $(KERNEL_BUILD_DIR) $(TAR_OPTIONS)
     endef
-else
-    define Kernel/Prepare/Default
-	wget $(CONFIG_KERNEL_HTTP_WGET_URI)-$(CONFIG_KERNEL_GIT_COMMIT).tar.gz -P $(DL_DIR)
-	$(TAR) xvfz $(DL_DIR)/`basename $(CONFIG_KERNEL_HTTP_WGET_URI)-$(CONFIG_KERNEL_GIT_COMMIT).tar.gz` \
-	-C `dirname $(LINUX_DIR)`
-    endef
-endif
   endif
 else
   define Kernel/Prepare/Default

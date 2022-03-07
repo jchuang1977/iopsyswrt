@@ -84,40 +84,16 @@ endif
 define BuildKernel
   $(if $(QUILT),$(Build/Quilt))
   $(if $(LINUX_SITE),$(call Download,kernel))
-ifeq ($(strip $(CONFIG_KERNEL_HTTP_WGET_URI)),"")
   $(if $(call qstrip,$(CONFIG_KERNEL_GIT_CLONE_URI)),$(call Download,git-kernel))
-endif
+
   .NOTPARALLEL:
 
-ifneq ($(strip $(CONFIG_KERNEL_GIT_COMMIT)),"")
-  $(STAMP_PREPARED): $(if $(LINUX_SITE),$(DL_DIR)/$(LINUX_SOURCE))
-ifeq ($(strip $(CONFIG_KERNEL_HTTP_WGET_URI)),"")
-	if [ -d $(LINUX_DIR) ]; then \
-		cd $(LINUX_DIR); \
-		git remote update; \
-		git checkout $(CONFIG_KERNEL_GIT_COMMIT); \
-	else \
-		rm -rf $(KERNEL_BUILD_DIR); \
-		mkdir -p $(KERNEL_BUILD_DIR); \
-		git clone $(KERNEL_GIT_OPTS) $(CONFIG_KERNEL_GIT_CLONE_URI) $(LINUX_DIR); \
-	cd $(LINUX_DIR) && git checkout $(CONFIG_KERNEL_GIT_COMMIT); \
-	fi
-else
-	rm -rf $(KERNEL_BUILD_DIR);
-	mkdir -p $(KERNEL_BUILD_DIR);
-	wget $(CONFIG_KERNEL_HTTP_WGET_URI)-$(CONFIG_KERNEL_GIT_COMMIT).tar.gz -P $(DL_DIR)
-	$(TAR) xvfz $(DL_DIR)/`basename $(CONFIG_KERNEL_HTTP_WGET_URI)-$(CONFIG_KERNEL_GIT_COMMIT).tar.gz` \
-	-C $(KERNEL_BUILD_DIR)
-	touch $$@
-endif
-else
   $(Kernel/Autoclean)
   $(STAMP_PREPARED): $(if $(LINUX_SITE),$(DL_DIR)/$(LINUX_SOURCE))
 	-rm -rf $(KERNEL_BUILD_DIR)
 	-mkdir -p $(KERNEL_BUILD_DIR)
 	$(Kernel/Prepare)
 	touch $$@
-endif
 
   $(KERNEL_BUILD_DIR)/symtab.h: FORCE
 	rm -f $(KERNEL_BUILD_DIR)/symtab.h
