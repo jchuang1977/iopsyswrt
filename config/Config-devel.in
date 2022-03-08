@@ -118,18 +118,6 @@ menuconfig DEVEL
 		depends on (KERNEL_GIT_CLONE_URI != "")
 		default ""
 
-	config KERNEL_GIT_COMMIT
-		string "Enter git commit to clone" if DEVEL
-		depends on (KERNEL_GIT_CLONE_URI != "")
-		default ""
-		help
-		  Enter the commit id to checkout after cloning the git repository.
-		  If unused, the clone's repository HEAD will be checked-out.
-
-	config KERNEL_HTTP_WGET_URI
-		string "URI of kernel tarball" if DEVEL
-		default ""
-
 	config BUILD_LOG
 		bool "Enable log files during build process" if DEVEL
 		help
