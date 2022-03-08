@@ -56,10 +56,6 @@ HOST_KMAKE := $(MAKE) -C $(HOST_BUILD_DIR) \
 
 define Host/Configure/all
 	mkdir -p $(BUILD_DIR_TOOLCHAIN)/linux-dev
-	cd  $(BUILD_DIR_TOOLCHAIN)/linux; \
-	if [ -d .git ]; then \
-		git checkout $(CONFIG_KERNEL_GIT_BRANCH); \
-	fi
 	$(HOST_KMAKE) \
 		INSTALL_HDR_PATH="$(BUILD_DIR_TOOLCHAIN)/linux-dev/" \
 		headers_install
