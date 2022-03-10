@@ -143,35 +143,70 @@ check_bash()
     fi
 }
 
-download_extract_brcm_toolchain() {
+download_check_hash() {
     local url="$1"
     local sha256="$2"
-    local path="$3"
     local tarball="$(mktemp iop_brcm_tar.XXXXXXX)"
-    wget -nv "$url" -O "$tarball"
-    if ! sha256sum -c <(echo "${sha256} *${tarball}"); then
-        echo "Hash mismatch of tarball $url (expected: $sha256)"
-        sha256sum "$tarball"
+    wget -nv "$url" -O "$tarball" || return 1
+    if ! sha256sum --quiet -c <(echo "${sha256} *${tarball}") >&2; then
+        echo "Hash mismatch of tarball $url (expected: $sha256)" >&2
+        sha256sum "$tarball" >&2
         rm -f $tarball
+        return 1
+    fi
+    printf "%s" "$tarball"
+}
+
+download_extract_bcm() {
+    local type="$1"
+    local url="$2"
+    local sha256="$3"
+    local path="$4"
+
+    local tarball="$(download_check_hash "$url" "$sha256")"
+    if [ -z "$tarball" ]; then
+        echo "Error: Error occurred during download or hash verification for $url"
         exit 1
     fi
-    # current 9.2/4.19/2.30/2.32 BCM toolchain has owner of files set to some employee who created the tar
-    # Change to root during extraction
-    if [ -z "$path" ]; then
+
+    case "$type" in
+    toolchain)
+        # current 9.2/4.19/2.30/2.32 BCM toolchain has owner of files set to some employee who created the tar
+        # Change to root during extraction
         # tarballs have /opt/toolchains in them, hence the -P and no -C
         sudo tar --owner=root --group=root -Pxf "$tarball"
-    else
-        # the eabi toolchain is packed a bit differently
-	sudo mkdir -p "$path"
+        ;;
+    hnd_toolchain)
+        sudo mkdir -p "$path" && \
         sudo tar --owner=root --group=root -C "$path" -xf "$tarball" --strip-components=1
-    fi
+        ;;
+    wlan_fw_tools)
+        (
+        set -e
+        sudo mkdir -p "$path"
+        sudo unzip -j \
+            "$tarball" \
+            bcawlan-fw-build-post-process-tools/post-process-tools/\* \
+            -d "$path/bin"
+        sudo find "$path/bin" -type f -not -name '*.ini' -execdir chmod +x '{}' ';'
+        )
+        ;;
+    *)
+        echo "Error: Unknown type $type" >&2
+        false
+        ;;
+    esac
+    local ret=$?
     rm -f "$tarball"
+    return "$ret"
 }
+
 
 check_brcm_tools(){
     local install_arm=0
     local install_aarch64=0
     local install_eabi=0
+    local install_wlan_fw_tools=0
 
     if [ ! -d /opt/toolchains/crosstools-arm-gcc-9.2-linux-4.19-glibc-2.30-binutils-2.32 ]; then
         install_arm=1
@@ -188,10 +223,15 @@ check_brcm_tools(){
         echo "Need to install Broadcom eabi toolchain"
     fi
 
-    if [ $install_arm -eq 1 -o $install_aarch64 -eq 1 -o $install_eabi -eq 1 ]; then
-        read -p "Do you approve installation of missing toolchains (y/n): " ans
+    if [ ! -d /opt/bcawlan-fw-build-post-process-tools ]; then
+        install_wlan_fw_tools=1
+        echo "Need to install bcawlan-fw-build-post-process-tools"
+    fi
+
+    if [ "$install_arm" -eq 1 -o "$install_aarch64" -eq 1 -o "$install_eabi" -eq 1 -o "$install_wlan_fw_tools" -eq 1 ]; then
+        read -p "Do you approve installation of the aforementioned missing toolchains and tools (y/n): " ans
         if [ "$ans" == "y" ]; then
-            echo "Downloading toolchain"
+            echo "Downloading toolchain/tools"
         else
             echo "can't continue. aborting"
             exit 1
@@ -202,22 +242,33 @@ check_brcm_tools(){
 
         if [ $install_arm -eq 1 ]; then
             echo "Installing ARM toolchain"
-            download_extract_brcm_toolchain \
+            download_extract_bcm \
+                toolchain \
                 https://download.iopsys.eu/iopsys/toolchain/crosstools-arm-gcc-9.2-linux-4.19-glibc-2.30-binutils-2.32.Rel1.12.tar.bz2 \
                 1b5118bd3e9488f5436fb1e94f5837d2cc7b6e1c45db04e5966969a46942403f
         fi
         if [ $install_aarch64 -eq 1 ]; then
             echo "Installing aarch64 toolchain"
-            download_extract_brcm_toolchain \
+            download_extract_bcm \
+                toolchain \
                 https://download.iopsys.eu/iopsys/toolchain/crosstools-aarch64-gcc-9.2-linux-4.19-glibc-2.30-binutils-2.32.Rel1.12.tar.bz2 \
                 2f60b8e01e02c928481ff3fb47052a7134c0499c1ccc26a9ddfb8b527008a115
         fi
         if [ $install_eabi -eq 1 ]; then
             echo "Installing eabi toolchain"
-            download_extract_brcm_toolchain \
+            download_extract_bcm \
+                hnd_toolchain \
                 https://download.iopsys.eu/iopsys/toolchain/arm-2013.11-24-arm-none-eabi-i686-pc-linux-gnu.tar.bz2 \
                 752a0928b220ff209e3facb20df09e53e6493285ac8b620723edab7eadb1ba8a \
                 /opt/toolchains/hndtools-armeabi-2013.11
+        fi
+        if [ $install_wlan_fw_tools -eq 1 ]; then
+            echo "Installing bcawlan-fw-build-post-process-tools"
+            download_extract_bcm \
+                wlan_fw_tools \
+                https://download.iopsys.eu/iopsys/toolchain/bcawlan-fw-build-post-process-tools.zip \
+                1082d631317aef900ab2bfe549830bfbc76da87f21ff78cd3129f369f3f92101 \
+                /opt/bcawlan-fw-build-post-process-tools
         fi
     fi
 }
