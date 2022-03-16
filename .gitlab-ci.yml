@@ -70,16 +70,19 @@ SMARTHUB3:
   extends: .nightly
   variables:
     CUSTOMER_PROFILE: "EVAL"
+    CUSTOMER_PROFILE_EXTRA: "ANALYTICS"
 
 DISC:
   extends: .nightly
   variables:
     CUSTOMER_PROFILE: "EVAL"
+    CUSTOMER_PROFILE_EXTRA: "ANALYTICS"
 
 EAGLE:
   extends: .nightly
   variables:
     CUSTOMER_PROFILE: "EVAL"
+    CUSTOMER_PROFILE_EXTRA: "ANALYTICS"
 
 PANTHER:
   extends: .nightly
@@ -96,6 +99,7 @@ EN7562:
   extends: .nightly
   variables:
     CUSTOMER_PROFILE: "EVAL"
+    CUSTOMER_PROFILE_EXTRA: "ANALYTICS"
 
 TIGER:
   extends: .nightly
