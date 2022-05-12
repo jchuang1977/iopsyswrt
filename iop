@@ -5,7 +5,6 @@ arr_index=0
 declare -a command_array
 declare -a help_array
 
-
 # Check if we should clone feeds with ssh or http
 developer=0
 which git >/dev/null && git remote -v 2>/dev/null | grep -qE '(git@|ssh://)' && developer=1
@@ -173,8 +172,7 @@ download_extract_bcm() {
     toolchain)
         # current 9.2/4.19/2.30/2.32 BCM toolchain has owner of files set to some employee who created the tar
         # Change to root during extraction
-        # tarballs have /opt/toolchains in them, hence the -P and no -C
-        sudo tar --owner=root --group=root -Pxf "$tarball"
+        sudo tar --owner=root --group=root -C "$path" -xf "$tarball"
         ;;
     hnd_toolchain)
         sudo mkdir -p "$path" && \
@@ -204,21 +202,34 @@ download_extract_bcm() {
 
 check_brcm_tools(){
     local install_arm=0
+    local install_arm_softfp=0
+    local install_arm_hf=0
     local install_aarch64=0
     local install_eabi=0
     local install_wlan_fw_tools=0
+    local TOOLCHAIN_DIR="/opt/toolchains/"
 
-    if [ ! -d /opt/toolchains/crosstools-arm-gcc-9.2-linux-4.19-glibc-2.30-binutils-2.32 ]; then
+    if [ ! -d ${TOOLCHAIN_DIR}/crosstools-arm-gcc-10.3-linux-4.19-glibc-2.32-binutils-2.36.1 ]; then
         install_arm=1
         echo "Need to install Broadcom ARM toolchain"
     fi
 
-    if [ ! -d /opt/toolchains/crosstools-aarch64-gcc-9.2-linux-4.19-glibc-2.30-binutils-2.32 ]; then
+    if [ ! -d ${TOOLCHAIN_DIR}/crosstools-arm_softfp-gcc-10.3-linux-4.19-glibc-2.32-binutils-2.36.1 ]; then
+        install_arm_softfp=1
+        echo "Need to install Broadcom ARM-softfp toolchain"
+    fi
+
+    if [ ! -d ${TOOLCHAIN_DIR}crosstools-arm_hf-gcc-10.3-linux-4.19-glibc-2.32-binutils-2.36.1 ]; then
+        install_arm_hf=1
+        echo "Need to install Broadcom ARM-hf toolchain"
+    fi
+
+    if [ ! -d ${TOOLCHAIN_DIR}crosstools-aarch64-gcc-10.3-linux-4.19-glibc-2.32-binutils-2.36.1 ]; then
         install_aarch64=1
         echo "Need to install Broadcom aarch64 toolchain"
     fi
 
-    if [ ! -d /opt/toolchains/hndtools-armeabi-2013.11 ]; then
+    if [ ! -d ${TOOLCHAIN_DIR}hndtools-armeabi-2013.11 ]; then
         install_eabi=1
         echo "Need to install Broadcom eabi toolchain"
     fi
@@ -228,7 +239,8 @@ check_brcm_tools(){
         echo "Need to install bcawlan-fw-build-post-process-tools"
     fi
 
-    if [ "$install_arm" -eq 1 -o "$install_aarch64" -eq 1 -o "$install_eabi" -eq 1 -o "$install_wlan_fw_tools" -eq 1 ]; then
+    if [ "$install_arm" -eq 1 -o "$install_arm_softfp" -eq 1 -o "$install_arm_hf" -eq 1 \
+          -o "$install_aarch64" -eq 1 -o "$install_eabi" -eq 1 -o "$install_wlan_fw_tools" -eq 1 ]; then
         read -p "Do you approve installation of the aforementioned missing toolchains and tools (y/n): " ans
         if [ "$ans" == "y" ]; then
             echo "Downloading toolchain/tools"
@@ -238,21 +250,37 @@ check_brcm_tools(){
         fi
 
         # create install dir
-        sudo mkdir -p /opt/toolchains/
+        sudo mkdir -p ${TOOLCHAIN_DIR}
 
         if [ $install_arm -eq 1 ]; then
             echo "Installing ARM toolchain"
             download_extract_bcm \
                 toolchain \
-                https://download.iopsys.eu/iopsys/toolchain/crosstools-arm-gcc-9.2-linux-4.19-glibc-2.30-binutils-2.32.Rel1.12.tar.bz2 \
-                1b5118bd3e9488f5436fb1e94f5837d2cc7b6e1c45db04e5966969a46942403f
+                https://download.iopsys.eu/iopsys/toolchain/crosstools-arm-gcc-10.3-linux-4.19-glibc-2.32-binutils-2.36.1.Rel1.13.tar.bz2 \
+                38657d72a7726db3e13621784d3e1ad65e2721c0538e87cc38cf3266bde26d6f \
+                ${TOOLCHAIN_DIR}
+        fi
+        if [ $install_arm_softfp -eq 1 ]; then
+            download_extract_bcm \
+                toolchain \
+                https://download.iopsys.eu/iopsys/toolchain/crosstools-arm_softfp-gcc-10.3-linux-4.19-glibc-2.32-binutils-2.36.1.Rel1.13.tar.bz2 \
+                9af29bac2ba6cbe51ee09467dbe97dc76a47bbf00df1fffafa1433817d2a147b \
+                ${TOOLCHAIN_DIR}
+        fi
+        if [ $install_arm_hf -eq 1 ]; then
+            download_extract_bcm \
+                toolchain \
+                https://download.iopsys.eu/iopsys/toolchain/crosstools-arm_hf-gcc-10.3-linux-4.19-glibc-2.32-binutils-2.36.1.Rel1.13.tar.bz2 \
+                3e57bbbb5e0b832813aa93274dfa937260833af645c2bc03cb1c88d4e98def92 \
+                ${TOOLCHAIN_DIR}
         fi
         if [ $install_aarch64 -eq 1 ]; then
             echo "Installing aarch64 toolchain"
             download_extract_bcm \
                 toolchain \
-                https://download.iopsys.eu/iopsys/toolchain/crosstools-aarch64-gcc-9.2-linux-4.19-glibc-2.30-binutils-2.32.Rel1.12.tar.bz2 \
-                2f60b8e01e02c928481ff3fb47052a7134c0499c1ccc26a9ddfb8b527008a115
+                https://download.iopsys.eu/iopsys/toolchain/crosstools-aarch64-gcc-10.3-linux-4.19-glibc-2.32-binutils-2.36.1.Rel1.13.tar.bz2 \
+                aed8c327951a5a7bfd67f9d2e92f844923a216994764e0aa32903bd40ea8945a \
+                ${TOOLCHAIN_DIR}
         fi
         if [ $install_eabi -eq 1 ]; then
             echo "Installing eabi toolchain"
@@ -260,7 +288,7 @@ check_brcm_tools(){
                 hnd_toolchain \
                 https://download.iopsys.eu/iopsys/toolchain/arm-2013.11-24-arm-none-eabi-i686-pc-linux-gnu.tar.bz2 \
                 752a0928b220ff209e3facb20df09e53e6493285ac8b620723edab7eadb1ba8a \
-                /opt/toolchains/hndtools-armeabi-2013.11
+                ${TOOLCHAIN_DIR}/hndtools-armeabi-2013.11
         fi
         if [ $install_wlan_fw_tools -eq 1 ]; then
             echo "Installing bcawlan-fw-build-post-process-tools"
