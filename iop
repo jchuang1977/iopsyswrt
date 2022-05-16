@@ -161,6 +161,11 @@ download_extract_bcm() {
     local url="$2"
     local sha256="$3"
     local path="$4"
+    local path_strip_no=0
+
+    if [ ! -z "$5" ]; then
+        path_strip_no="$5"
+    fi
 
     local tarball="$(download_check_hash "$url" "$sha256")"
     if [ -z "$tarball" ]; then
@@ -172,7 +177,7 @@ download_extract_bcm() {
     toolchain)
         # current 9.2/4.19/2.30/2.32 BCM toolchain has owner of files set to some employee who created the tar
         # Change to root during extraction
-        sudo tar --owner=root --group=root -C "$path" -xf "$tarball"
+        sudo tar --owner=root --group=root -C "$path" --strip-components=$path_strip_no -Pxf "$tarball"
         ;;
     hnd_toolchain)
         sudo mkdir -p "$path" && \
@@ -202,6 +207,7 @@ download_extract_bcm() {
 
 check_brcm_tools(){
     local install_arm=0
+    local install_arm_9_2=0
     local install_arm_softfp=0
     local install_arm_hf=0
     local install_aarch64=0
@@ -212,6 +218,11 @@ check_brcm_tools(){
     if [ ! -d ${TOOLCHAIN_DIR}/crosstools-arm-gcc-10.3-linux-4.19-glibc-2.32-binutils-2.36.1 ]; then
         install_arm=1
         echo "Need to install Broadcom ARM toolchain"
+    fi
+
+    if [ ! -d ${TOOLCHAIN_DIR}/crosstools-arm-gcc-9.2-linux-4.19-glibc-2.30-binutils-2.32 ]; then
+        install_arm_9_2=1
+        echo "Need to install Broadcom ARM 9.2 toolchain"
     fi
 
     if [ ! -d ${TOOLCHAIN_DIR}/crosstools-arm_softfp-gcc-10.3-linux-4.19-glibc-2.32-binutils-2.36.1 ]; then
@@ -239,8 +250,10 @@ check_brcm_tools(){
         echo "Need to install bcawlan-fw-build-post-process-tools"
     fi
 
-    if [ "$install_arm" -eq 1 -o "$install_arm_softfp" -eq 1 -o "$install_arm_hf" -eq 1 \
-          -o "$install_aarch64" -eq 1 -o "$install_eabi" -eq 1 -o "$install_wlan_fw_tools" -eq 1 ]; then
+    if [ "$install_arm" -eq 1 -o "$install_arm_9_2" -eq 1 \
+        -o "$install_arm_softfp" -eq 1 -o "$install_arm_hf" -eq 1 \
+        -o "$install_aarch64" -eq 1 -o "$install_eabi" -eq 1 \
+        -o "$install_wlan_fw_tools" -eq 1 ]; then
         read -p "Do you approve installation of the aforementioned missing toolchains and tools (y/n): " ans
         if [ "$ans" == "y" ]; then
             echo "Downloading toolchain/tools"
@@ -259,6 +272,15 @@ check_brcm_tools(){
                 https://download.iopsys.eu/iopsys/toolchain/crosstools-arm-gcc-10.3-linux-4.19-glibc-2.32-binutils-2.36.1.Rel1.13.tar.bz2 \
                 38657d72a7726db3e13621784d3e1ad65e2721c0538e87cc38cf3266bde26d6f \
                 ${TOOLCHAIN_DIR}
+        fi
+        if [ $install_arm_9_2 -eq 1 ]; then
+            echo "Installing ARM 9.2 toolchain"
+            download_extract_bcm \
+                toolchain \
+                https://download.iopsys.eu/iopsys/toolchain/crosstools-arm-gcc-9.2-linux-4.19-glibc-2.30-binutils-2.32.Rel1.12.tar.bz2 \
+                1b5118bd3e9488f5436fb1e94f5837d2cc7b6e1c45db04e5966969a46942403f \
+                ${TOOLCHAIN_DIR} \
+                2
         fi
         if [ $install_arm_softfp -eq 1 ]; then
             download_extract_bcm \
