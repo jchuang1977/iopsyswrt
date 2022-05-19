@@ -110,3 +110,9 @@ TIGER:
   extends: .nightly
   variables:
     SKIP_TEST: "true"
+
+NVG578:
+  extends: .nightly
+  variables:
+    CUSTOMER_PROFILE: "EVAL"
+    SKIP_TEST: "true"
