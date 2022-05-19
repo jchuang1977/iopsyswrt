@@ -40,20 +40,26 @@ Update Docker Image:
   script:
     - mkdir -p /kaniko/.docker
     - echo "{\"auths\":{\"${REGISTRY_URL}\":{\"auth\":\"${REGISTRY_AUTH}\"}}}" > /kaniko/.docker/config.json
-    - DOCKER_BASE_VERSION="$(grep -m1 '^FROM' Dockerfile | cut -d':' -f2)"
+    - |
+        if [ "${CI_COMMIT_REF_NAME:-}" = "${CI_DEFAULT_BRANCH}" ]; then
+          DOCKER_TAG='latest'
+        else
+          DOCKER_TAG="${CI_COMMIT_REF_NAME}"
+        fi
     - |
         /kaniko/executor \
           --context ${CI_PROJECT_DIR} \
           --dockerfile ${CI_PROJECT_DIR}/Dockerfile \
-          --destination ${REGISTRY_REPOSITORY}:latest
+          --destination ${REGISTRY_REPOSITORY}:"${DOCKER_TAG}"
   rules:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
       when: never
-    - if: '$CI_COMMIT_BRANCH == "$CI_DEFAULT_BRANCH" || $CI_COMMIT_BRANCH =~ /^release-\d+\.\d+$/'
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH || $CI_COMMIT_BRANCH =~ /^release-\d+\.\d+$/'
       changes:
         - Dockerfile
         - docker/**
         - iop
+    - if: '$CI_COMMIT_TAG'
   interruptible: true
 
 # Continuous Build
