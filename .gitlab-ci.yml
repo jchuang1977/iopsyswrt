@@ -45,13 +45,11 @@ Update Docker Image:
         /kaniko/executor \
           --context ${CI_PROJECT_DIR} \
           --dockerfile ${CI_PROJECT_DIR}/Dockerfile \
-          --destination ${REGISTRY_REPOSITORY}:${CI_COMMIT_SHORT_SHA} \
-          --destination ${REGISTRY_REPOSITORY}:${DOCKER_BASE_VERSION} \
           --destination ${REGISTRY_REPOSITORY}:latest
   rules:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
       when: never
-    - if: '$CI_COMMIT_BRANCH == "devel" || $CI_COMMIT_BRANCH == "release-5.3"'
+    - if: '$CI_COMMIT_BRANCH == "$CI_DEFAULT_BRANCH" || $CI_COMMIT_BRANCH =~ /^release-\d+\.\d+$/'
       changes:
         - Dockerfile
         - docker/**
