@@ -45,6 +45,7 @@ Update Docker Image:
         /kaniko/executor \
           --context ${CI_PROJECT_DIR} \
           --dockerfile ${CI_PROJECT_DIR}/Dockerfile \
+          --destination ${REGISTRY_REPOSITORY}:"${CI_COMMIT_SHORT_SHA}" \
           --destination ${REGISTRY_REPOSITORY}:"${CI_COMMIT_REF_NAME}" \
           ${IS_DEFAULT_BRANCH:+--destination ${REGISTRY_REPOSITORY}:latest}
   rules:
