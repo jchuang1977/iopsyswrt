@@ -1,3 +1,7 @@
+variables:
+  SKIP_TEST:
+    value: "false"
+
 stages:
   - Update docker image
   - IOPSYSWRT
@@ -7,7 +11,7 @@ stages:
   variables:
     BOARD_NAME: $CI_JOB_NAME
     BUILD_TYPE: $BUILD_TYPE
-    SKIP_TEST: "false"
+    SKIP_TEST: $SKIP_TEST
   trigger:
     project: devops/iopsyswrt
     strategy: depend
