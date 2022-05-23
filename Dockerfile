@@ -16,7 +16,7 @@ RUN dpkg --add-architecture i386 && \
         python3-yaml
 
 # Install Node.js
-ARG NODEJS_VERSION_MAJOR=14
+ARG NODEJS_VERSION_MAJOR=16
 RUN curl -fsSL "https://deb.nodesource.com/setup_${NODEJS_VERSION_MAJOR}.x" | bash - && \
     apt-get install -y nodejs && \
     npm install --global typescript yarn
