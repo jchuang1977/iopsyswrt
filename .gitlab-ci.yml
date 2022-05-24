@@ -64,6 +64,7 @@ SMARTHUB3_continuous:
   extends: .continuous
   variables:
     BOARD_NAME: "SMARTHUB3"
+    SKIP_TEST: "true"
 
 # Nightly
 EX400:
