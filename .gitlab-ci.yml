@@ -91,6 +91,12 @@ EAGLE:
     CUSTOMER_PROFILE: "EVAL"
     CUSTOMER_PROFILE_EXTRA: "ANALYTICS"
 
+NVG678:
+  extends: .nightly
+  variables:
+    CUSTOMER_PROFILE: "EVAL"
+    CUSTOMER_PROFILE_EXTRA: "ANALYTICS"
+
 PANTHER:
   extends: .nightly
 
