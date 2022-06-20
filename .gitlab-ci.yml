@@ -108,11 +108,19 @@ KOALA:
   variables:
     SKIP_TEST: "true"
 
-EN7562:
+ARCEE:
   extends: .nightly
   variables:
     CUSTOMER_PROFILE: "EVAL"
     CUSTOMER_PROFILE_EXTRA: "ANALYTICS"
+    SKIP_TEST: "true"
+
+RODIMUS:
+  extends: .nightly
+  variables:
+    CUSTOMER_PROFILE: "EVAL"
+    CUSTOMER_PROFILE_EXTRA: "ANALYTICS"
+    SKIP_TEST: "true"
 
 TIGER:
   extends: .nightly
