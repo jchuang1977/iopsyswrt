@@ -38,5 +38,6 @@ git-src
 .current_config_file
 .genconfig.config
 customerconfigs/
+target/linux/feeds/
+# old location still needed due to bugs
 target/linux/iopsys-*
-target/linux/intel_mips
