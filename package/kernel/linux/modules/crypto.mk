@@ -57,7 +57,7 @@ define KernelPackage/crypto-arc4
 	  CONFIG_CRYPTO_USER_API_ENABLE_OBSOLETE=y
   FILES:= \
 	  $(LINUX_DIR)/crypto/arc4.ko \
-	  $(LINUX_DIR)/lib/crypto/libarc4.ko
+	  $(LINUX_DIR)/lib/crypto/libarc4.ko@ge5.10
   AUTOLOAD:=$(call AutoLoad,09,arc4)
   $(call AddDepends/crypto)
 endef
@@ -961,4 +961,3 @@ define KernelPackage/crypto-xts
 endef
 
 $(eval $(call KernelPackage,crypto-xts))
-
