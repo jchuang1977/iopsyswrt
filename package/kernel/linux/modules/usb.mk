@@ -1770,8 +1770,10 @@ define KernelPackage/usb-xhci-hcd
 	  CONFIG_USB_XHCI_HCD \
 	  CONFIG_USB_XHCI_HCD_DEBUGGING=n
   HIDDEN:=1
-  FILES:=$(LINUX_DIR)/drivers/usb/host/xhci-hcd.ko
-  AUTOLOAD:=$(call AutoLoad,54,xhci-hcd,1)
+  ifndef CONFIG_TARGET_iopsys_econet
+   FILES:=$(LINUX_DIR)/drivers/usb/host/xhci-hcd.ko
+   AUTOLOAD:=$(call AutoLoad,54,xhci-hcd,1)
+  endif
   $(call AddDepends/usb)
 endef
 
