@@ -15,7 +15,7 @@ chdir $ENV{TOPDIR};
 $ENV{GIT_CONFIG_PARAMETERS}="'core.autocrlf=false'";
 $ENV{GREP_OPTIONS}="";
 
-my $mk=`which gmake 2>/dev/null`;	# select the right 'make' program
+my $mk=`command -v gmake 2>/dev/null`;	# select the right 'make' program
 chomp($mk);		# trim trailing newline
 $mk or $mk = "make";	# default to 'make'
 
@@ -169,9 +169,9 @@ my %update_method = (
 		'init'          => "git clone '%s' '%s'",
 		'init_branch'   => "git clone --branch '%s' '%s' '%s'",
 		'init_commit'   => "git clone '%s' '%s' && cd '%s' && git checkout '%s' && cd -",
+		'update'	=> "git pull --ff-only",
+		'update_force'	=> "git pull --ff-only || (git reset --hard HEAD; git pull --ff-only; exit 1)",
 		'checkout_commit'=> "cd '%s' && git remote update && git checkout '%s'",
-		'update'	=> "git pull --ff",
-		'update_force'	=> "git pull --ff || (git reset --hard HEAD; git pull --ff; exit 1)",
 		'post_update'	=> "git submodule update --init --recursive",
 		'controldir'	=> ".git",
 		'revision'	=> "git rev-parse --short HEAD | tr -d '\n'"},
@@ -452,14 +452,16 @@ sub do_install_target($) {
 		$path =~ s/\/Makefile$//;
 		my $name = $path;
 		$name =~ s/.*\///;
-		my $dest = "./target/linux/$name";
+		my $dest = "./target/linux/feeds/$name";
+
+		-d "./target/linux/feeds" or mkdir "./target/linux/feeds";
 
 		-e $dest and do {
 			warn "Path $dest already exists";
 			return 1;
 		};
 
-		system("ln -sf ../../$path ./target/linux/");
+		system("ln -sf ../../../$path ./target/linux/feeds/");
 	} else {
 		warn "Target is not valid\n";
 		return 1;
@@ -516,16 +518,34 @@ sub is_core_src($) {
 sub install_target {
 	my $feed = shift;
 	my $name = shift;
+	my $force = shift;
 
-	$installed_targets{$name} and return 0;
+	$feed = lookup_target($feed, $name);
+	my $feed_name = $feed->[1];
 
-	$feed = $feed_cache{$feed->[1]}->[2];
+	-e "target/linux/feeds/$name" and return 0;
+
+	# enable force flag if feed src line was declared with --force
+	if (exists($feed->[3]{force})) {
+		$force = 1;
+	}
+
+	$feed = $feed_cache{$feed_name}->[2];
 	$feed or return 0;
 
 	my $target = $feed->{$name};
 	$target or return 0;
 
-	warn "Installing target '$name'\n";
+	if (-e "target/linux/$name") {
+		if ($force) {
+			warn "Overriding target '$name' with version from '$feed_name'\n";
+		} else {
+			warn "WARNING: Not overriding core target '$name'; use -f to force\n";
+			return 0;
+		}
+	} else {
+		warn "Installing target '$name'\n";
+	}
 	return do_install_target($target);
 }
 
@@ -636,7 +656,7 @@ sub install_target_or_package {
 	my $force = shift;
 
 	lookup_target($feed, $name) and do {
-		return install_target($feed, $name);
+		return install_target($feed, $name, $force);
 	};
 
 	lookup_src($feed, $name) and do {
@@ -752,7 +772,7 @@ sub uninstall {
 		}
 		get_installed();
 		while ($name = shift @ARGV) {
-			my $target = "target/linux/$name";
+			my $target = "target/linux/feeds/$name";
 			-l "$target" and do {
 				uninstall_target($target);
 				$uninstall = 1;
@@ -774,12 +794,11 @@ sub uninstall {
 	return 0;
 }
 
-sub update_feed($$$$$$)
+sub update_feed($$$$$)
 {
 	my $type=shift;
 	my $name=shift;
 	my $src=shift;
-	my $perform_update=shift;
 	my $force_update=shift;
 	my $rewrite_urls=shift;
 	my $force_relocate=update_location( $name, "@$src" );
@@ -796,14 +815,12 @@ sub update_feed($$$$$$)
 		warn "Unknown type '$type' in feed $name\n";
 		return 1;
 	};
-	$perform_update and do {
-		my $failed = 1;
-		foreach my $feedsrc (@$src) {
 
-		    if (index($feedsrc, "^") != -1) {
-
-				# Skip repos with git@ url:s if user
-				# does not have developer access.
+	my $failed = 1;
+	foreach my $feedsrc (@$src) {
+		if (index($feedsrc, "^") != -1) {
+			# Skip repos with git@ url:s if user
+			# does not have developer access.
 			if ( ! $developer ) {
 				my ($git,$rest) = split(/\@/, $feedsrc, 2);
 				chomp($git);
@@ -812,68 +829,54 @@ sub update_feed($$$$$$)
 				    next;
 				}
 			}
-				# Feed points to a commit
-				my ($base_commit, $commit) = split(/\^/, $feedsrc, 2);
-				chomp($feed_commit);
-				chomp($commit);
+			# Feed points to a commit
+			my ($base_commit, $commit) = split(/\^/, $feedsrc, 2);
+			chomp($feed_commit);
+			chomp($commit);
 
-				if ( $feed_commit eq $commit ) {
-					# HEAD points to same commit as in feeds.conf
-					print "Feed $name is up to date with feeds.conf: $commit\n";
-					$failed = 0;
-					$skip = 1;
-					next;
-				}
-		    }
-			warn "Updating feed '$name' from '$feedsrc' ...\n";
-			if (update_feed_via($type, $name, $feedsrc, $force_relocate, $force_update, $rewrite_urls) != 0) {
-				if ($force_update) {
-					$rv=1;
-					$failed=0;
-					warn "failed, ignore.\n";
-					next;
-				}
-				last;
+			if ( $feed_commit eq $commit ) {
+				# HEAD points to same commit as in feeds.conf
+				print "Feed $name is up to date with feeds.conf: $commit\n";
+				$failed = 0;
+				$skip = 1;
+				next;
 			}
-			$failed = 0;
 		}
-		$failed and do {
-			warn "failed.\n";
-			return 1;
-		};
-	};
 
-	if ($skip == 0) {
-		warn "Create index file './feeds/$name.index' \n";
-		update_index($name) == 0 or do {
-			warn "failed.\n";
-			return 1;
-		};
+		warn "Updating feed '$name' from '$feedsrc' ...\n";
+		if (update_feed_via($type, $name, $feedsrc, $force_relocate, $force_update, $rewrite_urls) != 0) {
+			if ($force_update) {
+				$rv=1;
+				$failed=0;
+				warn "failed, ignore.\n";
+				next;
+			}
+			last;
+		}
+		$failed = 0;
 	}
+	$failed and do {
+		warn "failed.\n";
+		return 1;
+	};
 	return $rv;
 }
 
 sub update {
 	my %opts;
-	my $feed_name;
-	my $perform_update=1;
-	my $rewrite_urls=0;
+	my %argv_feeds;
 	my $failed=0;
+	my $rewrite_urls=0;
 
 	$ENV{SCAN_COOKIE} = $$;
 	$ENV{OPENWRT_VERBOSE} = 's';
 
 	getopts('ahifg', \%opts);
+	%argv_feeds = map { $_ => 1 } @ARGV;
 
 	if ($opts{h}) {
 		usage();
 		return 0;
-	}
-
-	if ($opts{i}) {
-		# don't update from (remote) repository
-		# only re-create index information
-		$perform_update=0;
 	}
 
 	if ($opts{g}) {
@@ -885,21 +888,21 @@ sub update {
 			mkdir "feeds" or die "Unable to create the feeds directory";
 		};
 
-	if ( ($#ARGV == -1) or $opts{a}) {
-		foreach my $feed (@feeds) {
-			my ($type, $name, $src) = @$feed;
-			update_feed($type, $name, $src, $perform_update, $opts{f}, $rewrite_urls) == 0 or $failed=1;
+	my @index_feeds;
+	foreach my $feed (@feeds) {
+		my ($type, $name, $src) = @$feed;
+		next unless $#ARGV == -1 or $opts{a} or $argv_feeds{$name};
+		if (not $opts{i}) {
+			update_feed($type, $name, $src, $opts{f}, $rewrite_urls) == 0 or $failed=1;
 		}
-	} else {
-		while ($feed_name = shift @ARGV) {
-			foreach my $feed (@feeds) {
-				my ($type, $name, $src) = @$feed;
-				if($feed_name ne $name) {
-					next;
-				}
-				update_feed($type, $name, $src, $perform_update, $opts{f}, $rewrite_urls) == 0 or $failed=1;
-			}
-		}
+		push @index_feeds, $name;
+	}
+	foreach my $name (@index_feeds) {
+		warn "Create index file './feeds/$name.index' \n";
+		update_index($name) == 0 or do {
+			warn "failed.\n";
+			$failed=1;
+		};
 	}
 
 	refresh_config();
@@ -973,7 +976,7 @@ my %commands = (
 	'uninstall' => \&uninstall,
 	'feed_config' => \&feed_config,
 	'clean' => sub {
-		system("rm -rf ./feeds ./package/feeds");
+		system("rm -rf ./feeds ./package/feeds ./target/linux/feeds");
 	}
 );
 

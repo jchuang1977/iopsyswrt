@@ -40,7 +40,9 @@ define KernelPackage/crypto-aead
   KCONFIG:= \
 	CONFIG_CRYPTO_AEAD \
 	CONFIG_CRYPTO_AEAD2
-  FILES:=$(LINUX_DIR)/crypto/aead.ko
+  FILES:= \
+	  $(LINUX_DIR)/crypto/aead.ko \
+	  $(LINUX_DIR)/crypto/geniv.ko@ge5.10
   AUTOLOAD:=$(call AutoLoad,09,aead,1)
   $(call AddDepends/crypto, +kmod-crypto-null)
 endef
@@ -50,8 +52,12 @@ $(eval $(call KernelPackage,crypto-aead))
 
 define KernelPackage/crypto-arc4
   TITLE:=ARC4 cipher CryptoAPI module
-  KCONFIG:=CONFIG_CRYPTO_ARC4
-  FILES:=$(LINUX_DIR)/crypto/arc4.ko
+  KCONFIG:= \
+	  CONFIG_CRYPTO_ARC4 \
+	  CONFIG_CRYPTO_USER_API_ENABLE_OBSOLETE=y
+  FILES:= \
+	  $(LINUX_DIR)/crypto/arc4.ko \
+	  $(LINUX_DIR)/lib/crypto/libarc4.ko
   AUTOLOAD:=$(call AutoLoad,09,arc4)
   $(call AddDepends/crypto)
 endef
@@ -281,7 +287,7 @@ define KernelPackage/crypto-ghash/arm-ce
   AUTOLOAD+=$(call AutoLoad,09,ghash-arm-ce)
 endef
 
-KernelPackage/crypto-ghash/imx6=$(KernelPackage/crypto-ghash/arm-ce)
+KernelPackage/crypto-ghash/imx=$(KernelPackage/crypto-ghash/arm-ce)
 KernelPackage/crypto-ghash/ipq40xx=$(KernelPackage/crypto-ghash/arm-ce)
 KernelPackage/crypto-ghash/mvebu/cortexa9=$(KernelPackage/crypto-ghash/arm-ce)
 
@@ -340,7 +346,7 @@ $(eval $(call KernelPackage,crypto-hw-ccp))
 
 define KernelPackage/crypto-hw-geode
   TITLE:=AMD Geode hardware crypto module
-  DEPENDS:=+kmod-crypto-manager
+  DEPENDS:=@TARGET_x86_geode +kmod-crypto-manager
   KCONFIG:= \
 	CONFIG_CRYPTO_HW=y \
 	CONFIG_CRYPTO_DEV_GEODE
@@ -354,7 +360,7 @@ $(eval $(call KernelPackage,crypto-hw-geode))
 
 define KernelPackage/crypto-hw-hifn-795x
   TITLE:=HIFN 795x crypto accelerator
-  DEPENDS:=+kmod-random-core +kmod-crypto-manager
+  DEPENDS:=@PCI_SUPPORT +kmod-random-core +kmod-crypto-manager
   KCONFIG:= \
 	CONFIG_CRYPTO_HW=y \
 	CONFIG_CRYPTO_DEV_HIFN_795X \
@@ -414,7 +420,8 @@ $(eval $(call KernelPackage,crypto-hw-safexcel))
 
 define KernelPackage/crypto-hw-talitos
   TITLE:=Freescale integrated security engine (SEC) driver
-  DEPENDS:=+kmod-crypto-manager +kmod-crypto-hash +kmod-random-core +kmod-crypto-authenc +kmod-crypto-des
+  DEPENDS:=@(TARGET_mpc85xx||TARGET_layerscape) +kmod-crypto-manager \
+	+kmod-crypto-hash +kmod-random-core +kmod-crypto-authenc +kmod-crypto-des
   KCONFIG:= \
 	CONFIG_CRYPTO_HW=y \
 	CONFIG_CRYPTO_DEV_TALITOS \
@@ -438,29 +445,6 @@ define KernelPackage/crypto-kpp
 endef
 
 $(eval $(call KernelPackage,crypto-kpp))
-
-
-define KernelPackage/crypto-lib-blake2s
-  TITLE:=BLAKE2s hash function library
-  KCONFIG:=CONFIG_CRYPTO_LIB_BLAKE2S
-  HIDDEN:=1
-  FILES:= \
-	$(LINUX_DIR)/lib/crypto/libblake2s.ko \
-	$(LINUX_DIR)/lib/crypto/libblake2s-generic.ko
-  $(call AddDepends/crypto,+PACKAGE_kmod-crypto-hash:kmod-crypto-hash)
-endef
-
-define KernelPackage/crypto-lib-blake2s/config
-  imply PACKAGE_kmod-crypto-hash
-endef
-
-define KernelPackage/crypto-lib-blake2s/x86/64
-  KCONFIG+=CONFIG_CRYPTO_BLAKE2S_X86
-  FILES+=$(LINUX_DIR)/arch/x86/crypto/blake2s-x86_64.ko
-endef
-
-$(eval $(call KernelPackage,crypto-lib-blake2s))
-
 
 define KernelPackage/crypto-lib-chacha20
   TITLE:=ChaCha library interface
@@ -594,7 +578,7 @@ $(eval $(call KernelPackage,crypto-lib-poly1305))
 
 define KernelPackage/crypto-manager
   TITLE:=CryptoAPI algorithm manager
-  DEPENDS:=+kmod-crypto-aead +kmod-crypto-hash +kmod-crypto-pcompress
+  DEPENDS:=+kmod-crypto-aead +kmod-crypto-hash
   KCONFIG:= \
 	CONFIG_CRYPTO_MANAGER \
 	CONFIG_CRYPTO_MANAGER2
@@ -653,6 +637,7 @@ define KernelPackage/crypto-misc
   TITLE:=Other CryptoAPI modules
   DEPENDS:=+kmod-crypto-xts
   KCONFIG:= \
+	CONFIG_CRYPTO_USER_API_ENABLE_OBSOLETE=y \
 	CONFIG_CRYPTO_CAMELLIA_X86_64 \
 	CONFIG_CRYPTO_BLOWFISH_X86_64 \
 	CONFIG_CRYPTO_TWOFISH_X86_64 \
@@ -763,19 +748,6 @@ endef
 $(eval $(call KernelPackage,crypto-pcbc))
 
 
-define KernelPackage/crypto-pcompress
-  TITLE:=CryptoAPI Partial (de)compression operations
-  KCONFIG:= \
-	CONFIG_CRYPTO_PCOMP=y \
-	CONFIG_CRYPTO_PCOMP2
-  FILES:=$(LINUX_DIR)/crypto/pcompress.ko
-  AUTOLOAD:=$(call AutoLoad,09,pcompress)
-  $(call AddDepends/crypto)
-endef
-
-$(eval $(call KernelPackage,crypto-pcompress))
-
-
 define KernelPackage/crypto-rsa
   TITLE:=RSA algorithm
   DEPENDS:=+kmod-crypto-manager +kmod-asn1-decoder
@@ -862,7 +834,7 @@ define KernelPackage/crypto-sha1/arm-neon
   AUTOLOAD+=$(call AutoLoad,09,sha1-arm-neon)
 endef
 
-KernelPackage/crypto-sha1/imx6=$(KernelPackage/crypto-sha1/arm-neon)
+KernelPackage/crypto-sha1/imx=$(KernelPackage/crypto-sha1/arm-neon)
 KernelPackage/crypto-sha1/ipq40xx=$(KernelPackage/crypto-sha1/arm-neon)
 KernelPackage/crypto-sha1/mvebu/cortexa9=$(KernelPackage/crypto-sha1/arm-neon)
 
@@ -926,7 +898,7 @@ define KernelPackage/crypto-sha512/arm
   AUTOLOAD+=$(call AutoLoad,09,sha512-arm)
 endef
 
-KernelPackage/crypto-sha512/imx6=$(KernelPackage/crypto-sha512/arm)
+KernelPackage/crypto-sha512/imx=$(KernelPackage/crypto-sha512/arm)
 KernelPackage/crypto-sha512/ipq40xx=$(KernelPackage/crypto-sha512/arm)
 KernelPackage/crypto-sha512/mvebu/cortexa9=$(KernelPackage/crypto-sha512/arm)
 
@@ -977,16 +949,6 @@ define KernelPackage/crypto-user
 endef
 
 $(eval $(call KernelPackage,crypto-user))
-
-
-define KernelPackage/crypto-wq
-  TITLE:=CryptoAPI work queue handling
-  KCONFIG:=CONFIG_CRYPTO_WORKQUEUE
-  FILES:=$(LINUX_DIR)/crypto/crypto_wq.ko
-  AUTOLOAD:=$(call AutoLoad,09,crypto_wq)
-  $(call AddDepends/crypto)
-endef
-$(eval $(call KernelPackage,crypto-wq))
 
 
 define KernelPackage/crypto-xts
