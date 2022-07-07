@@ -124,16 +124,6 @@ ppp_generic_setup() {
 	}
 
 	[ -n "$keepalive" ] || keepalive="5 1"
-	if [ -z "$pppd_options" ]; then
-		cmd=${mtu:+mtu $mtu mru $mtu};
-	else
-		find_str='mru'
-		if [[ "$pppd_options" == *"$find_str"* ]]; then
-			cmd=${mtu:+mtu $mtu};
-		else
-			cmd=${mtu:+mtu $mtu mru $mtu};
-		fi
-	fi
 
 	local lcp_failure="${keepalive%%[, ]*}"
 	local lcp_interval="${keepalive##*[, ]}"
@@ -164,7 +154,7 @@ ppp_generic_setup() {
 		${ipv6:+ipv6-up-script /lib/netifd/ppp6-up} \
 		ip-down-script /lib/netifd/ppp-down \
 		${ipv6:+ipv6-down-script /lib/netifd/ppp-down} \
-		${cmd} \
+		${mtu:+mtu $mtu mru $mtu} \
 		"$@" $pppd_options
 }
 
@@ -172,7 +162,6 @@ ppp_generic_teardown() {
 	local interface="$1"
 	local errorstring=$(ppp_exitcode_tostring $ERROR)
 
-	echo $ERROR > /var/log/ppp.err
 	case "$ERROR" in
 		0)
 		;;
