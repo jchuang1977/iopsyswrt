@@ -3,10 +3,10 @@ variables:
 
 stages:
   - Update docker image
-  - IOPSYSWRT
+  - IOWRT
 
 .nightly:
-  stage: IOPSYSWRT
+  stage: IOWRT
   variables:
     IOPSYSWRT_BRANCH_OR_TAG: $CI_COMMIT_REF_NAME
     BOARD_NAME: $CI_JOB_NAME
@@ -19,12 +19,12 @@ stages:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
 
 .continuous:
-  stage: IOPSYSWRT
+  stage: IOWRT
   trigger:
     project: devops/iopsyswrt
     strategy: depend
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == "devel"'
+    - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
       changes:
         - feeds.conf
 
@@ -59,76 +59,90 @@ Update Docker Image:
     - if: '$CI_COMMIT_TAG'
   interruptible: true
 
+
+# For devices participating in automated testing
+.variables_autotest:
+  variables:
+    CUSTOMER_PROFILE: "EVAL"
+    CUSTOMER_PROFILE_EXTRA: "ANALYTICS"
+
+# For select devices that support the EVAL profile
+.variables_eval:
+  variables:
+    CUSTOMER_PROFILE: "EVAL"
+    SKIP_TEST: "true"
+
+# For all other devices
+.variables_default:
+  variables:
+    SKIP_TEST: "true"
+
+
 # Continuous Build
 SMARTHUB3_continuous:
-  extends: .continuous
+  extends:
+    - .continuous
+    - .variables_eval
   variables:
     BOARD_NAME: "SMARTHUB3"
-    SKIP_TEST: "true"
 
-# Nightly
+# Nighlly
 EX400:
-  extends: .nightly
-  variables:
-    SKIP_TEST: "true"
+  extends:
+    - .nightly
+    - .variables_default
 
 SMARTHUB3:
-  extends: .nightly
-  variables:
-    CUSTOMER_PROFILE: "EVAL"
-    CUSTOMER_PROFILE_EXTRA: "ANALYTICS"
+  extends:
+    - .nightly
+    - .variables_eval
 
 DISC:
-  extends: .nightly
-  variables:
-    CUSTOMER_PROFILE: "EVAL"
-    CUSTOMER_PROFILE_EXTRA: "ANALYTICS"
-    SKIP_TEST: "true"
+  extends:
+    - .nightly
+    - .variables_eval
 
 EAGLE:
-  extends: .nightly
-  variables:
-    CUSTOMER_PROFILE: "EVAL"
-    CUSTOMER_PROFILE_EXTRA: "ANALYTICS"
+  extends:
+    - .nightly
+    - .variables_eval
 
 NVG678:
-  extends: .nightly
-  variables:
-    CUSTOMER_PROFILE: "EVAL"
-    CUSTOMER_PROFILE_EXTRA: "ANALYTICS"
+  extends:
+    - .nightly
+    - .variables_autotest
 
 PANTHER:
-  extends: .nightly
+  extends:
+    - .nightly
+    - .variables_default
 
 PANDA:
-  extends: .nightly
+  extends:
+    - .nightly
+    - .variables_default
 
 KOALA:
-  extends: .nightly
-  variables:
-    SKIP_TEST: "true"
+  extends:
+    - .nightly
+    - .variables_eval
 
 ARCEE:
-  extends: .nightly
-  variables:
-    CUSTOMER_PROFILE: "EVAL"
-    CUSTOMER_PROFILE_EXTRA: "ANALYTICS"
-    SKIP_TEST: "true"
+  extends:
+    - .nightly
+    - .variables_eval
 
 RODIMUS:
-  extends: .nightly
-  variables:
-    CUSTOMER_PROFILE: "EVAL"
-    CUSTOMER_PROFILE_EXTRA: "ANALYTICS"
-    SKIP_TEST: "true"
+  extends:
+    - .nightly
+    - .variables_autotest
 
 TIGER:
-  extends: .nightly
-  variables:
-    SKIP_TEST: "true"
+  extends:
+    - .nightly
+    - .variables_default
 
 NVG578:
-  extends: .nightly
-  variables:
-    CUSTOMER_PROFILE: "EVAL"
-    SKIP_TEST: "true"
+  extends:
+    - .nightly
+    - .variables_eval
