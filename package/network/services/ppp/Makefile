@@ -215,10 +215,6 @@ define Build/InstallDev
 endef
 
 define Package/ppp/script_install
-	$(INSTALL_DIR) $(1)/etc/ppp/ip-up.d
-	$(INSTALL_DIR) $(1)/etc/ppp/ip-down.d
-	$(INSTALL_BIN) ./files/etc/ppp/ip-up.d/* $(1)/etc/ppp/ip-up.d/
-	$(INSTALL_BIN) ./files/etc/ppp/ip-down.d/* $(1)/etc/ppp/ip-down.d/
 endef
 
 define Package/ppp/install
@@ -235,7 +231,6 @@ define Package/ppp/install
 	$(INSTALL_BIN) ./files/lib/netifd/ppp-up $(1)/lib/netifd/
 	$(INSTALL_BIN) ./files/lib/netifd/ppp6-up $(1)/lib/netifd/
 	$(INSTALL_BIN) ./files/lib/netifd/ppp-down $(1)/lib/netifd/
-	$(Package/ppp/script_install)
 endef
 Package/ppp-multilink/install=$(Package/ppp/install)
 
