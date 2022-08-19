@@ -24,8 +24,8 @@ Signed-off-by: Hauke Mehrtens <hauke@hauke-m.de>
 
 --- a/drivers/mtd/nand/spi/gigadevice.c
 +++ b/drivers/mtd/nand/spi/gigadevice.c
-@@ -132,6 +132,35 @@ static const struct mtd_ooblayout_ops gd
- 	.free = gd5fxgq4_variant2_ooblayout_free,
+@@ -100,6 +100,35 @@ static const struct mtd_ooblayout_ops gd
+ 	.free = gd5fxgq4xa_ooblayout_free,
  };
  
 +static int gd5fxgq4xc_ooblayout_256_ecc(struct mtd_info *mtd, int section,
@@ -57,10 +57,10 @@ Signed-off-by: Hauke Mehrtens <hauke@hauke-m.de>
 +	.free = gd5fxgq4xc_ooblayout_256_free,
 +};
 +
- static int gd5fxgq4uexxg_ecc_get_status(struct spinand_device *spinand,
- 					u8 status)
+ static int gd5fxgq4xa_ecc_get_status(struct spinand_device *spinand,
+ 					 u8 status)
  {
-@@ -222,6 +251,24 @@ static const struct spinand_info gigadev
+@@ -295,6 +324,24 @@ static const struct spinand_info gigadevice_spinand_table[] = {
  		     SPINAND_HAS_QE_BIT,
  		     SPINAND_ECCINFO(&gd5fxgq4xa_ooblayout,
  				     gd5fxgq4xa_ecc_get_status)),
@@ -82,6 +82,6 @@ Signed-off-by: Hauke Mehrtens <hauke@hauke-m.de>
 +		     SPINAND_HAS_QE_BIT,
 +		     SPINAND_ECCINFO(&gd5fxgq4xc_oob_256_ops,
 +				     gd5fxgq4ufxxg_ecc_get_status)),
- 	SPINAND_INFO("GD5F1GQ4UExxG", 0xd1,
+ 	SPINAND_INFO("GD5F1GQ4UExxG",
+ 	             SPINAND_ID(SPINAND_READID_METHOD_OPCODE_ADDR, 0xd1),
  		     NAND_MEMORG(1, 2048, 128, 64, 1024, 20, 1, 1, 1),
- 		     NAND_ECCREQ(8, 512),
