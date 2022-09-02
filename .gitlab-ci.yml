@@ -87,6 +87,11 @@ SMARTHUB3_continuous:
     BOARD_NAME: "SMARTHUB3"
 
 # Nightly
+CW3:
+  extends:
+    - .nightly
+    - .variables_default
+
 EX400:
   extends:
     - .nightly
