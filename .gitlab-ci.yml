@@ -151,3 +151,8 @@ NVG578:
   extends:
     - .nightly
     - .variables_eval
+
+MTK_PANTHER:
+  extends:
+    - .nightly
+    - .variables_autotest
