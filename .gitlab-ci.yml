@@ -156,3 +156,16 @@ MTK_PANTHER:
   extends:
     - .nightly
     - .variables_autotest
+
+X86:
+  stage: IOWRT
+  variables:
+    IOWRT_COMMIT_REF_NAME: $CI_COMMIT_REF_NAME
+    IOWRT_COMMIT_SHA: $CI_COMMIT_SHA
+  trigger:
+    project: devops/iowrt-docker
+    strategy: depend
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+  # TODO Remove below when feature is stabilised
+  allow_failure: true
