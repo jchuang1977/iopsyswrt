@@ -87,17 +87,25 @@ SMARTHUB3_continuous:
     BOARD_NAME: "SMARTHUB3"
 
 # Nightly
-CW3:
+# Boards are added so that autotest boards come first (to provide maximum test time), then ones with EVAL profile,
+# finally the remaining ones with default configuration.
+# Please maintain the order above, as well as order boards alphabetically for each configuration type.
+MTK_PANTHER:
   extends:
     - .nightly
-    - .variables_default
+    - .variables_autotest
 
-EX400:
+NVG678:
   extends:
     - .nightly
-    - .variables_default
+    - .variables_autotest
 
-SMARTHUB3:
+RODIMUS:
+  extends:
+    - .nightly
+    - .variables_autotest
+
+ARCEE:
   extends:
     - .nightly
     - .variables_eval
@@ -112,12 +120,27 @@ EAGLE:
     - .nightly
     - .variables_eval
 
-NVG678:
+KOALA:
   extends:
     - .nightly
-    - .variables_autotest
+    - .variables_eval
 
-PANTHER:
+NVG578:
+  extends:
+    - .nightly
+    - .variables_eval
+
+SMARTHUB3:
+  extends:
+    - .nightly
+    - .variables_eval
+
+CW3:
+  extends:
+    - .nightly
+    - .variables_default
+
+EX400:
   extends:
     - .nightly
     - .variables_default
@@ -127,35 +150,15 @@ PANDA:
     - .nightly
     - .variables_default
 
-KOALA:
+PANTHER:
   extends:
     - .nightly
-    - .variables_eval
-
-ARCEE:
-  extends:
-    - .nightly
-    - .variables_eval
-
-RODIMUS:
-  extends:
-    - .nightly
-    - .variables_autotest
+    - .variables_default
 
 TIGER:
   extends:
     - .nightly
     - .variables_default
-
-NVG578:
-  extends:
-    - .nightly
-    - .variables_eval
-
-MTK_PANTHER:
-  extends:
-    - .nightly
-    - .variables_autotest
 
 X86:
   stage: IOWRT
