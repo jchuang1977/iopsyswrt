@@ -166,3 +166,24 @@ X86:
     strategy: depend
   rules:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
+
+MTK_PANTHER_OPEN:
+  stage: IOWRT
+  tags:
+    - external
+  image: ${REGISTRY_REPOSITORY}:latest
+  variables:
+    # Ensure work directory matches default user of the container
+    FF_DISABLE_UMASK_FOR_DOCKER_EXECUTOR: 'true'
+    # Full clone is needed to get the correct tag/version of the build
+    GIT_STRATEGY: clone
+    # Disable user/pass prompts for git operations with feeds - build as public user
+    GIT_TERMINAL_PROMPT: '0'
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+  script:
+    - ./iop bootstrap
+    - ./iop feeds_update
+    - ./iop genconfig mtk_panther
+    - make -j8 download || make -j1 V=s download
+    - make -j$(nproc) || make -j1 V=s
