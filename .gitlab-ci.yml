@@ -166,5 +166,3 @@ X86:
     strategy: depend
   rules:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
-  # TODO Remove below when feature is stabilised
-  allow_failure: true
