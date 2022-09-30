@@ -3,6 +3,7 @@ variables:
 
 stages:
   - Update docker image
+  - Update code-analysis Docker image
   - IOWRT
 
 .nightly:
@@ -54,6 +55,17 @@ Update Docker Image:
         - iop
     - if: '$CI_COMMIT_TAG'
   interruptible: true
+
+
+code-analysis:
+  stage: Update code-analysis Docker image
+  trigger:
+    project: iopsys/gitlab-ci-pipeline
+    strategy: depend
+    branch: $CI_COMMIT_REF_NAME
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+  allow_failure: true
 
 
 # For devices participating in automated testing
