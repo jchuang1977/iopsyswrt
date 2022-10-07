@@ -229,11 +229,6 @@ $(eval $(call nf_add,NF_NATHELPER_EXTRA,CONFIG_NF_CONNTRACK_IRC, $(P_XT)nf_connt
 $(eval $(call nf_add,NF_NATHELPER_EXTRA,CONFIG_NF_NAT_IRC, $(P_XT)nf_nat_irc))
 
 
-# ulog
-
-$(eval $(call nf_add,IPT_ULOG,CONFIG_IP_NF_TARGET_ULOG, $(P_V4)ipt_ULOG))
-
-
 # nflog
 
 $(eval $(call nf_add,IPT_NFLOG,CONFIG_NETFILTER_XT_TARGET_NFLOG, $(P_XT)xt_NFLOG))
@@ -320,7 +315,6 @@ $(eval $(call nf_add,EBTABLES_IP4,CONFIG_BRIDGE_EBT_SNAT, $(P_EBT)ebt_snat))
 
 # watchers
 $(eval $(call nf_add,EBTABLES_WATCHERS,CONFIG_BRIDGE_EBT_LOG, $(P_EBT)ebt_log))
-$(eval $(call nf_add,EBTABLES_WATCHERS,CONFIG_BRIDGE_EBT_ULOG, $(P_EBT)ebt_ulog))
 $(eval $(call nf_add,EBTABLES_WATCHERS,CONFIG_BRIDGE_EBT_NFLOG, $(P_EBT)ebt_nflog))
 $(eval $(call nf_add,EBTABLES_WATCHERS,CONFIG_BRIDGE_EBT_NFQUEUE, $(P_EBT)ebt_nfqueue))
 
@@ -371,6 +365,8 @@ $(eval $(if $(NF_KMOD),$(call nf_add,NFT_TPROXY,CONFIG_NFT_TPROXY, $(P_XT)nft_tp
 
 $(eval $(if $(NF_KMOD),$(call nf_add,NFT_COMPAT,CONFIG_NFT_COMPAT, $(P_XT)nft_compat),))
 
+$(eval $(if $(NF_KMOD),$(call nf_add,NFT_XFRM,CONFIG_NFT_XFRM, $(P_XT)nft_xfrm),))
+
 # userland only
 IPT_BUILTIN += $(NF_IPT-y) $(NF_IPT-m)
 IPT_BUILTIN += $(IPT_CORE-y) $(IPT_CORE-m)
@@ -395,7 +391,6 @@ IPT_BUILTIN += $(IPT_NAT6-y)
 IPT_BUILTIN += $(IPT_NAT_EXTRA-y)
 IPT_BUILTIN += $(NF_NATHELPER-y)
 IPT_BUILTIN += $(NF_NATHELPER_EXTRA-y)
-IPT_BUILTIN += $(IPT_ULOG-y)
 IPT_BUILTIN += $(IPT_TPROXY-y)
 IPT_BUILTIN += $(NFNETLINK-y)
 IPT_BUILTIN += $(NFNETLINK_LOG-y)
