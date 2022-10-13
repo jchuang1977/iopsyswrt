@@ -156,6 +156,11 @@ TIGER:
     - .nightly
     - .variables_default
 
+INCA:
+  extends:
+    - .nightly
+    - .variables_default
+
 X86:
   stage: IOWRT
   variables:
