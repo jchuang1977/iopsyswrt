@@ -168,7 +168,7 @@ TIGER:
     - .nightly
     - .variables_default
 
-INCA:
+TAPIR:
   extends:
     - .nightly
     - .variables_default
