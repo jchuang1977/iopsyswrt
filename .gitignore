@@ -41,3 +41,4 @@ customerconfigs/
 target/linux/feeds/
 # old location still needed due to bugs
 target/linux/iopsys-*
+target/linux/ipq95xx
