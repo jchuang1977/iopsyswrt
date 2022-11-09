@@ -92,7 +92,7 @@ define Host/Prepare
 	$(SED) 's/@expr length/@-expr length/' $(HOST_BUILD_DIR)/Makefile
 endef
 
-ifeq ($(CONFIG_TARGET_iopsys_brcm63xx_arm)$(CONFIG_TARGET_iopsys_brcm63xx_mips),)
+ifeq ($(CONFIG_TARGET_brcmbca),)
  define Host/Configure
 	env
 	yes '' | $(HOST_KMAKE) oldconfig

@@ -86,7 +86,7 @@ prepare-tmpinfo: FORCE
 		[ "$$t" -nt "$$f" ] || ./scripts/$${type}-metadata.pl $(_ignore) config "$$f" > "$$t" || { rm -f "$$t"; echo "Failed to build $$t"; false; break; }; \
 	done
 	[ tmp/.config-feeds.in -nt tmp/.packageauxvars ] || ./scripts/feeds feed_config > tmp/.config-feeds.in
-ifeq ($(CONFIG_TARGET_iopsys_brcm63xx_arm)$(CONFIG_TARGET_iopsys_brcm63xx_mips),)
+ifeq ($(CONFIG_TARGET_brcmbca),)
 	./scripts/package-metadata.pl mk tmp/.packageinfo > tmp/.packagedeps || { rm -f tmp/.packagedeps; false; }
 else
 	./scripts/package-metadata.pl mk tmp/.packageinfo skip-kmods > tmp/.packagedeps || { rm -f tmp/.packagedeps; false; }
