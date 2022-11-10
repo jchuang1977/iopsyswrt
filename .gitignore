@@ -42,4 +42,5 @@ target/linux/feeds/
 # old location still needed due to bugs
 target/linux/iopsys-*
 target/linux/airoha
+target/linux/brcmbca
 target/linux/ipq95xx
