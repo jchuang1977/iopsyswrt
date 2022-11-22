@@ -86,13 +86,22 @@ code-analysis:
     SKIP_TEST: "true"
 
 
-# Continuous Build
+# Continuous Builds:
+# Broadcom
 SMARTHUB3_continuous:
   extends:
     - .continuous
     - .variables_eval
   variables:
     BOARD_NAME: "SMARTHUB3"
+
+# Airoha
+TAPIR_continuous:
+  extends:
+    - .continuous
+    - .variables_eval
+  variables:
+    BOARD_NAME: "TAPIR"
 
 # Nightly
 # Boards are added so that autotest boards come first (to provide maximum test time), then ones with EVAL profile,
