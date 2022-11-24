@@ -147,6 +147,11 @@ NVG578:
     - .nightly
     - .variables_eval
 
+NVG578M:
+  extends:
+    - .nightly
+    - .variables_eval
+
 SMARTHUB3:
   extends:
     - .nightly
