@@ -103,6 +103,14 @@ TAPIR_continuous:
   variables:
     BOARD_NAME: "TAPIR"
 
+# MediaTek
+CW3_continuous:
+  extends:
+    - .continuous
+    - .variables_eval
+  variables:
+    BOARD_NAME: "CW3"
+
 # Nightly
 # Boards are added so that autotest boards come first (to provide maximum test time), then ones with EVAL profile,
 # finally the remaining ones with default configuration.
