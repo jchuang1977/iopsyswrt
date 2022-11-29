@@ -355,6 +355,8 @@ static int psb6970_config_init(struct phy_device *pdev)
 		goto done;
 	}
 
+	dev->phy_ptr = priv;
+
 done:
 	return ret;
 }
