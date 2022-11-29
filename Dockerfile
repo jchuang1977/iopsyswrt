@@ -41,24 +41,25 @@ RUN echo 'debconf debconf/frontend select Noninteractive' | sudo debconf-set-sel
     yes | /iop setup_host && \
     rm /iop
 
-# Coccinelle installation
+# Install Coccinelle
+ARG COCCINELLE_VERSION=1.1.1
 RUN apt-get -y install ocaml \
-    ocaml-native-compilers \
-    libpycaml-ocaml-dev \
-    libpcre-ocaml-dev \
-    libmenhir-ocaml-dev && \
-    git clone --branch=1.1.1 https://github.com/coccinelle/coccinelle.git /tmp/coccinelle-src && \
-    cd /tmp/coccinelle-src      && \
-    ./autogen          && \
-    ./configure        && \
-    make          && \
+        ocaml-native-compilers \
+        libpycaml-ocaml-dev \
+        libpcre-ocaml-dev \
+        libmenhir-ocaml-dev && \
+    git clone --branch=${COCCINELLE_VERSION} https://github.com/coccinelle/coccinelle.git /tmp/coccinelle-src && \
+    cd /tmp/coccinelle-src && \
+    ./autogen && \
+    ./configure && \
+    make && \
     make install && \
-    apt remove -y ocaml \
-    ocaml-native-compilers \
-    libpycaml-ocaml-dev \
-    libpcre-ocaml-dev \
-    libmenhir-ocaml-dev  && \
-    rm -rf /tmp/coccinelle-src
+    apt-get -y autoremove --purge ocaml \
+        ocaml-native-compilers \
+        libpycaml-ocaml-dev \
+        libpcre-ocaml-dev \
+        libmenhir-ocaml-dev  && \
+    rm -r /tmp/coccinelle-src
 
 RUN echo "dev ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/10-dev
 
