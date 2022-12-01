@@ -168,7 +168,7 @@ SMARTHUB3:
 CW3:
   extends:
     - .nightly
-    - .variables_default
+    - .variables_eval
 
 EX400:
   extends:
