@@ -178,7 +178,7 @@ EX400:
 IPQ9574_NAND:
   extends:
     - .nightly
-    - .variables_eval
+    - .variables_default
 
 PANDA:
   extends:
