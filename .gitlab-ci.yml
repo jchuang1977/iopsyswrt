@@ -180,6 +180,11 @@ IPQ9574_NAND:
     - .nightly
     - .variables_eval
 
+IPQ9574_WNC:
+  extends:
+    - .nightly
+    - .variables_eval
+
 PANDA:
   extends:
     - .nightly
