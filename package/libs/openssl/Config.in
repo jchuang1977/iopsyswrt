@@ -49,6 +49,25 @@ config OPENSSL_WITH_SSE2
 		save 23KB by saying yes here.  AMD Geode NX, and Intel
 		Pentium 4 and above support SSE2.
 
+config OPENSSL_ARMCAP_FIXED
+	bool
+	default y if TARGET_brcmbca_bcm963138 || TARGET_brcmbca_bcm96846 || TARGET_brcmbca_bcm96878
+	prompt "Configure ARM CPU capabilities at compile time"
+	depends on arm_v7 || aarch64
+	help
+		This may be needed in cases where auto-detection does
+		not work. One such case is with quirky SoCs that have
+		multiple cores with different feature sets.
+
+config OPENSSL_ARMCAP_MASK
+	hex
+	default 0x0
+	prompt "ARM CPU capability bitmask"
+	depends on OPENSSL_ARMCAP_FIXED
+	help
+		The value of this bitmask follows the definition of
+		the OPENSSL_armcap environment variable.
+
 config OPENSSL_WITH_DEPRECATED
 	bool
 	default y

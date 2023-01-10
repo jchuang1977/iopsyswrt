@@ -1,0 +1,28 @@
+From d0c8a1d2e96410821e13cda0edcde2d303362826 Mon Sep 17 00:00:00 2001
+From: Erik Karlsson <erik.karlsson@genexis.eu>
+Date: Tue, 10 Jan 2023 17:58:44 +0100
+Subject: [PATCH] armcap: compile time configuration
+
+---
+ crypto/armcap.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/crypto/armcap.c b/crypto/armcap.c
+index 48c5d4d64e..77e2f22a2f 100644
+--- a/crypto/armcap.c
++++ b/crypto/armcap.c
+@@ -149,6 +149,11 @@ void OPENSSL_cpuid_setup(void)
+         return;
+     }
+ 
++# ifdef OPENSSL_ARMCAP
++    OPENSSL_armcap_P = OPENSSL_ARMCAP;
++    return;
++# endif
++
+ # if defined(__APPLE__) && !defined(__aarch64__)
+     /*
+      * Capability probing by catching SIGILL appears to be problematic
+-- 
+2.25.1
+
