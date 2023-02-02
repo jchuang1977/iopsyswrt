@@ -8,7 +8,6 @@ stages:
 
 .nightly:
   stage: IOWRT
-  interruptible: false
   variables:
     IOPSYSWRT_BRANCH_OR_TAG: $CI_COMMIT_REF_NAME
     BOARD_NAME: $CI_JOB_NAME
