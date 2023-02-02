@@ -37,7 +37,7 @@ menuconfig DEVEL
 
 	config GITMIRROR
 		string "Git mirror for source packages" if DEVEL
-		default "https://dev.iopsys.eu/mirror"
+		default ""
 
 	config AUTOREBUILD
 		bool "Automatic rebuild of packages" if DEVEL
