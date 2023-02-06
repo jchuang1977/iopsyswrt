@@ -170,11 +170,6 @@ CW3:
     - .nightly
     - .variables_eval
 
-EX400:
-  extends:
-    - .nightly
-    - .variables_default
-
 IPQ9574_NAND:
   extends:
     - .nightly
