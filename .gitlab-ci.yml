@@ -6,19 +6,6 @@ stages:
   - Update code-analysis Docker image
   - IOWRT
 
-.nightly:
-  stage: IOWRT
-  variables:
-    IOPSYSWRT_BRANCH_OR_TAG: $CI_COMMIT_REF_NAME
-    BOARD_NAME: $CI_JOB_NAME
-    BUILD_TYPE: $BUILD_TYPE
-    SKIP_TEST: $SKIP_TEST
-  trigger:
-    project: devops/iopsyswrt
-    strategy: depend
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "schedule"'
-
 .continuous:
   stage: IOWRT
   trigger:
@@ -56,7 +43,6 @@ Update Docker Image:
     - if: '$CI_COMMIT_TAG'
   interruptible: true
 
-
 code-analysis:
   stage: Update code-analysis Docker image
   trigger:
@@ -67,24 +53,11 @@ code-analysis:
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
   allow_failure: true
 
-
-# For devices participating in automated testing
-.variables_autotest:
-  variables:
-    CUSTOMER_PROFILE: "EVAL"
-    CUSTOMER_PROFILE_EXTRA: "ANALYTICS"
-
 # For select devices that support the EVAL profile
 .variables_eval:
   variables:
     CUSTOMER_PROFILE: "EVAL"
     SKIP_TEST: "true"
-
-# For all other devices
-.variables_default:
-  variables:
-    SKIP_TEST: "true"
-
 
 # Continuous Builds:
 # Broadcom
@@ -110,119 +83,3 @@ CW3_continuous:
     - .variables_eval
   variables:
     BOARD_NAME: "CW3"
-
-# Nightly
-# Boards are added so that autotest boards come first (to provide maximum test time), then ones with EVAL profile,
-# finally the remaining ones with default configuration.
-# Please maintain the order above, as well as order boards alphabetically for each configuration type.
-MTK_PANTHER:
-  extends:
-    - .nightly
-    - .variables_autotest
-
-NVG678:
-  extends:
-    - .nightly
-    - .variables_autotest
-
-RODIMUS:
-  extends:
-    - .nightly
-    - .variables_eval
-
-ARCEE:
-  extends:
-    - .nightly
-    - .variables_eval
-
-DISC:
-  extends:
-    - .nightly
-    - .variables_eval
-
-EAGLE:
-  extends:
-    - .nightly
-    - .variables_eval
-
-KOALA:
-  extends:
-    - .nightly
-    - .variables_eval
-
-NVG578:
-  extends:
-    - .nightly
-    - .variables_eval
-
-NVG578M:
-  extends:
-    - .nightly
-    - .variables_eval
-
-SMARTHUB3:
-  extends:
-    - .nightly
-    - .variables_eval
-
-CW3:
-  extends:
-    - .nightly
-    - .variables_eval
-
-IPQ9574_WNC_SH40J:
-  extends:
-    - .nightly
-    - .variables_eval
-
-PANDA:
-  extends:
-    - .nightly
-    - .variables_default
-
-PANTHER:
-  extends:
-    - .nightly
-    - .variables_default
-
-TIGER:
-  extends:
-    - .nightly
-    - .variables_default
-
-TAPIR:
-  extends:
-    - .nightly
-    - .variables_autotest
-
-X86:
-  stage: IOWRT
-  variables:
-    IOWRT_COMMIT_REF_NAME: $CI_COMMIT_REF_NAME
-    IOWRT_COMMIT_SHA: $CI_COMMIT_SHA
-  trigger:
-    project: devops/iowrt-docker
-    strategy: depend
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "schedule"'
-
-MTK_PANTHER_OPEN:
-  stage: IOWRT
-  tags:
-    - external
-  image: ${REGISTRY_REPOSITORY}:latest
-  variables:
-    # Ensure work directory matches default user of the container
-    FF_DISABLE_UMASK_FOR_DOCKER_EXECUTOR: 'true'
-    # Full clone is needed to get the correct tag/version of the build
-    GIT_STRATEGY: clone
-    # Disable user/pass prompts for git operations with feeds - build as public user
-    GIT_TERMINAL_PROMPT: '0'
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "schedule"'
-  script:
-    - ./iop bootstrap
-    - ./iop feeds_update
-    - ./iop genconfig mtk_panther
-    - make -j8 download || make -j1 V=s download
-    - make -j$(nproc) || make -j1 V=s
