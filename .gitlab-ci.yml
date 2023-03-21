@@ -38,11 +38,11 @@ Update Docker Image:
           --dockerfile "${CI_PROJECT_DIR}/Dockerfile" \
           --destination "${REGISTRY_REPOSITORY}:${CI_COMMIT_SHA}" \
           --destination "${CI_REGISTRY_IMAGE}/sdk-builder:${CI_COMMIT_SHA}" \
-          --destination "${REGISTRY_REPOSITORY}:${CI_COMMIT_REF_SLUG}" \
-          --destination "${CI_REGISTRY_IMAGE}/sdk-builder:${CI_COMMIT_REF_SLUG}" \
+          --destination "${REGISTRY_REPOSITORY}:${CI_COMMIT_REF_NAME}" \
+          --destination "${CI_REGISTRY_IMAGE}/sdk-builder:${CI_COMMIT_REF_NAME}" \
           ${IS_DEFAULT_BRANCH:+--destination "${REGISTRY_REPOSITORY}:latest" --destination "${CI_REGISTRY_IMAGE}/sdk-builder:latest"}
   rules:
-    - if: '$CI_COMMIT_REF_PROTECTED'
+    - if: '$CI_COMMIT_REF_PROTECTED == "true"'
   interruptible: true
 
 code-analysis:
