@@ -63,9 +63,12 @@ RUN apt-get -y install ocaml \
 
 RUN echo "dev ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/10-dev
 
-USER dev:dev
 ENTRYPOINT ["/usr/local/bin/fixuid", "-q"]
 CMD ["bash"]
-RUN mkdir -p /home/dev/iopsyswrt /home/dev/.ssh
+
+RUN mkdir -p /home/dev/iopsyswrt /home/dev/.ssh \
+    && chown -R dev:dev /home/dev
+
+USER dev:dev
 WORKDIR /home/dev/iopsyswrt
 VOLUME ["/home/dev/iopsyswrt"]
