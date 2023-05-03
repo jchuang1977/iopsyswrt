@@ -32,6 +32,10 @@ define KernelPackage/gpio-button-hotplug/description
  an overkill for OpenWrt simple needs.
 endef
 
+# support compilation against BCM SDK kernel
+KernelPackage/$(PKG_NAME) += $(newline)  DEPENDS+= +TARGET_brcmbca:bcmkernel$(newline)
+-include ../../feeds/broadcom/bcmkernel/bcm-kernel-toolchain.mk
+
 MAKE_OPTS:= \
 	$(KERNEL_MAKE_FLAGS) \
 	M="$(PKG_BUILD_DIR)"
