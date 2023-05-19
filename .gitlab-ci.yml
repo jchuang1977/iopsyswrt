@@ -24,7 +24,6 @@ Update Docker Image:
   stage: Update docker image
   tags:
     - priority
-    - docker
   image:
     name: gcr.io/kaniko-project/executor:v1.9.1-debug
     entrypoint: [""]
