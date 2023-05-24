@@ -30,9 +30,9 @@ function dump_commands {
 function bootstrap {
 
     if [ $developer == 1 ]; then
-        ./scripts/feeds update -g || exit 1
+        ./scripts/feeds update -g iopsys || exit 1
     else
-        ./scripts/feeds update || exit 1
+        ./scripts/feeds update iopsys || exit 1
     fi
 
     ./scripts/feeds install -p iopsys iop || exit 1
