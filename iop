@@ -120,7 +120,7 @@ libyajl-dev
 	echo "Need to install dpkg packages [$needed]"
 	read -p "Do you approve installation of these packages (y/n): " ans
 	if [ "$ans" == "y" ]; then
-	    sudo apt-get install $needed
+	    sudo apt-get update && sudo apt-get install $needed || exit $?
 	else
 	    echo "can't continue. aborting!"
 	    exit 1
