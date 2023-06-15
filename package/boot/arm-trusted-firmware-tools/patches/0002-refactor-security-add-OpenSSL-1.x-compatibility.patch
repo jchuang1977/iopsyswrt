@@ -1,0 +1,787 @@
+From cf2dd17ddda2f44f5dedddcaf48300d16358597a Mon Sep 17 00:00:00 2001
+From: Juan Pablo Conde <juanpablo.conde@arm.com>
+Date: Tue, 25 Oct 2022 19:41:02 -0400
+Subject: [PATCH] refactor(security): add OpenSSL 1.x compatibility
+
+When updated to work with OpenSSL 3.0, the host tools lost their
+compatibility with previous versions (1.x) of OpenSSL. This is
+mainly due to the fact that 1.x APIs became deprecated in 3.0 and
+therefore their use cause compiling errors. In addition, updating
+for a newer version of OpenSSL meant improving the stability
+against security threats. However, although version 1.1.1 is
+now deprecated, it still receives security updates, so it would
+not imply major security issues to keep compatibility with it too.
+
+This patch adds backwards compatibility with OpenSSL 1.x versions
+by adding back 1.x API code. It defines a macro USING_OPENSSL3,
+which will select the appropriate OpenSSL API version depending on
+the OpenSSL library path chosen (which is determined by the
+already-existing OPENSSL_DIR variable).
+
+In addition, cleanup items were packed in functions and moved to
+the proper modules in order to make the code more maintainable and
+legible.
+
+Signed-off-by: Juan Pablo Conde <juanpablo.conde@arm.com>
+Change-Id: I8deceb5e419edc73277792861882404790ccd33c
+---
+ Makefile                               |  6 +-
+ docs/getting_started/prerequisites.rst | 10 +--
+ make_helpers/build_macros.mk           | 16 ++++-
+ make_helpers/defaults.mk               |  2 +-
+ tools/cert_create/Makefile             | 20 ++++--
+ tools/cert_create/include/cert.h       |  3 +-
+ tools/cert_create/include/ext.h        |  3 +-
+ tools/cert_create/include/key.h        |  5 +-
+ tools/cert_create/src/cert.c           | 22 ++++++-
+ tools/cert_create/src/ext.c            | 19 +++++-
+ tools/cert_create/src/key.c            | 88 +++++++++++++++++++++++++-
+ tools/cert_create/src/main.c           | 32 ++--------
+ tools/cert_create/src/sha.c            | 46 +++++++++++++-
+ tools/encrypt_fw/Makefile              | 27 ++++++--
+ tools/fiptool/Makefile                 | 22 ++++++-
+ 15 files changed, 264 insertions(+), 57 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index a9abbc11f..b8076f17b 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1467,7 +1467,7 @@ checkpatch:		locate-checkpatch
+ certtool: ${CRTTOOL}
+ 
+ ${CRTTOOL}: FORCE
+-	${Q}${MAKE} PLAT=${PLAT} USE_TBBR_DEFS=${USE_TBBR_DEFS} COT=${COT} OPENSSL_DIR=${OPENSSL_DIR} CRTTOOL=${CRTTOOL} --no-print-directory -C ${CRTTOOLPATH}
++	${Q}${MAKE} PLAT=${PLAT} USE_TBBR_DEFS=${USE_TBBR_DEFS} COT=${COT} OPENSSL_DIR=${OPENSSL_DIR} CRTTOOL=${CRTTOOL} DEBUG=${DEBUG} V=${V} --no-print-directory -C ${CRTTOOLPATH}
+ 	@${ECHO_BLANK_LINE}
+ 	@echo "Built $@ successfully"
+ 	@${ECHO_BLANK_LINE}
+@@ -1512,7 +1512,7 @@ fwu_fip: ${BUILD_PLAT}/${FWU_FIP_NAME}
+ 
+ ${FIPTOOL}: FORCE
+ ifdef UNIX_MK
+-	${Q}${MAKE} CPPFLAGS="-DVERSION='\"${VERSION_STRING}\"'" FIPTOOL=${FIPTOOL} OPENSSL_DIR=${OPENSSL_DIR} --no-print-directory -C ${FIPTOOLPATH}
++	${Q}${MAKE} CPPFLAGS="-DVERSION='\"${VERSION_STRING}\"'" FIPTOOL=${FIPTOOL} OPENSSL_DIR=${OPENSSL_DIR} DEBUG=${DEBUG} V=${V} --no-print-directory -C ${FIPTOOLPATH}
+ else
+ # Clear the MAKEFLAGS as we do not want
+ # to pass the gnumake flags to nmake.
+@@ -1533,7 +1533,7 @@ doc:
+ enctool: ${ENCTOOL}
+ 
+ ${ENCTOOL}: FORCE
+-	${Q}${MAKE} PLAT=${PLAT} BUILD_INFO=0 OPENSSL_DIR=${OPENSSL_DIR} ENCTOOL=${ENCTOOL} --no-print-directory -C ${ENCTOOLPATH}
++	${Q}${MAKE} PLAT=${PLAT} BUILD_INFO=0 OPENSSL_DIR=${OPENSSL_DIR} ENCTOOL=${ENCTOOL} DEBUG=${DEBUG} V=${V} --no-print-directory -C ${ENCTOOLPATH}
+ 	@${ECHO_BLANK_LINE}
+ 	@echo "Built $@ successfully"
+ 	@${ECHO_BLANK_LINE}
+diff --git a/docs/getting_started/prerequisites.rst b/docs/getting_started/prerequisites.rst
+index 65a66b6d1..1e8fe418c 100644
+--- a/docs/getting_started/prerequisites.rst
++++ b/docs/getting_started/prerequisites.rst
+@@ -54,15 +54,15 @@ The following tools are required to obtain and build |TF-A|:
+ The following libraries must be available to build one or more components or
+ supporting tools:
+ 
+-- OpenSSL >= 3.0
++- OpenSSL >= 1.1.1 (v3.0.0 to v3.0.6 highly discouraged due to security issues)
+ 
+-   Required to build the cert_create tool.
++   Required to build the cert_create, encrypt_fw, and fiptool tools.
+ 
+    .. note::
+ 
+-    OpenSSL 3.0 has to be built from source code, as it's not available in
+-    the default package repositories in recent Ubuntu versions. Please refer
+-    to the OpenSSL project documentation for more information.
++    If using OpenSSL 3, older Linux versions may require it to be built from
++    source code, as it may not be available in the default package repositories.
++    Please refer to the OpenSSL project documentation for more information.
+ 
+ The following libraries are required for Trusted Board Boot and Measured Boot
+ support:
+diff --git a/make_helpers/build_macros.mk b/make_helpers/build_macros.mk
+index abdd4d069..426e34494 100644
+--- a/make_helpers/build_macros.mk
++++ b/make_helpers/build_macros.mk
+@@ -1,5 +1,5 @@
+ #
+-# Copyright (c) 2015-2022, ARM Limited and Contributors. All rights reserved.
++# Copyright (c) 2015-2022, Arm Limited and Contributors. All rights reserved.
+ #
+ # SPDX-License-Identifier: BSD-3-Clause
+ #
+@@ -238,6 +238,20 @@ check_$(1):
+ 	$(check_$(1)_cmd)
+ endef
+ 
++# SELECT_OPENSSL_API_VERSION selects the OpenSSL API version to be used to
++# build the host tools by checking the version of OpenSSL located under
++# the path defined by the OPENSSL_DIR variable. It receives no parameters.
++define SELECT_OPENSSL_API_VERSION
++    # Set default value for USING_OPENSSL3 macro to 0
++    $(eval USING_OPENSSL3 = 0)
++    # Obtain the OpenSSL version for the build located under OPENSSL_DIR
++    $(eval OPENSSL_INFO := $(shell LD_LIBRARY_PATH=${OPENSSL_DIR}:${OPENSSL_DIR}/lib ${OPENSSL_BIN_PATH}/openssl version))
++    $(eval OPENSSL_CURRENT_VER = $(word 2, ${OPENSSL_INFO}))
++    $(eval OPENSSL_CURRENT_VER_MAJOR = $(firstword $(subst ., ,$(OPENSSL_CURRENT_VER))))
++    # If OpenSSL version is 3.x, then set USING_OPENSSL3 flag to 1
++    $(if $(filter 3,$(OPENSSL_CURRENT_VER_MAJOR)), $(eval USING_OPENSSL3 = 1))
++endef
++
+ ################################################################################
+ # Generic image processing filters
+ ################################################################################
+diff --git a/make_helpers/defaults.mk b/make_helpers/defaults.mk
+index 65ceb7f20..496032f27 100644
+--- a/make_helpers/defaults.mk
++++ b/make_helpers/defaults.mk
+@@ -419,7 +419,7 @@ RAS_TRAP_NS_ERR_REC_ACCESS	:= 0
+ # Build option to create cot descriptors using fconf
+ COT_DESC_IN_DTB			:= 0
+ 
+-# Build option to provide openssl directory path
++# Build option to provide OpenSSL directory path
+ OPENSSL_DIR			:= /usr
+ 
+ # Select the openssl binary provided in OPENSSL_DIR variable
+diff --git a/tools/cert_create/Makefile b/tools/cert_create/Makefile
+index d951286bf..042e84462 100644
+--- a/tools/cert_create/Makefile
++++ b/tools/cert_create/Makefile
+@@ -1,5 +1,5 @@
+ #
+-# Copyright (c) 2015-2022, ARM Limited and Contributors. All rights reserved.
++# Copyright (c) 2015-2022, Arm Limited and Contributors. All rights reserved.
+ #
+ # SPDX-License-Identifier: BSD-3-Clause
+ #
+@@ -9,12 +9,12 @@ V		?= 0
+ DEBUG		:= 0
+ CRTTOOL		?= cert_create${BIN_EXT}
+ BINARY		:= $(notdir ${CRTTOOL})
+-OPENSSL_DIR	:= /usr
+ COT		:= tbbr
+ 
+ MAKE_HELPERS_DIRECTORY := ../../make_helpers/
+ include ${MAKE_HELPERS_DIRECTORY}build_macros.mk
+ include ${MAKE_HELPERS_DIRECTORY}build_env.mk
++include ${MAKE_HELPERS_DIRECTORY}defaults.mk
+ 
+ ifneq (${PLAT},none)
+ TF_PLATFORM_ROOT	:=	../../plat/
+@@ -45,6 +45,10 @@ ifneq (,$(wildcard ${PLAT_CERT_CREATE_HELPER_MK}))
+ include ${PLAT_CERT_CREATE_HELPER_MK}
+ endif
+ 
++# Select OpenSSL version flag according to the OpenSSL build selected
++# from setting the OPENSSL_DIR path.
++$(eval $(call SELECT_OPENSSL_API_VERSION))
++
+ HOSTCCFLAGS := -Wall -std=c99
+ 
+ ifeq (${DEBUG},1)
+@@ -60,6 +64,9 @@ else
+ endif
+ 
+ HOSTCCFLAGS += ${DEFINES}
++# USING_OPENSSL3 flag will be added to the HOSTCCFLAGS variable with the proper
++# computed value.
++HOSTCCFLAGS += -DUSING_OPENSSL3=$(USING_OPENSSL3)
+ 
+ # Make soft links and include from local directory otherwise wrong headers
+ # could get pulled in from firmware tree.
+@@ -76,11 +83,11 @@ LIB := -lssl -lcrypto
+ 
+ HOSTCC ?= gcc
+ 
+-.PHONY: all clean realclean
++.PHONY: all clean realclean --openssl
+ 
+ all: ${BINARY}
+ 
+-${BINARY}: ${OBJECTS} Makefile
++${BINARY}: --openssl ${OBJECTS} Makefile
+ 	@echo "  HOSTLD  $@"
+ 	@echo 'const char build_msg[] = "Built : "__TIME__", "__DATE__; \
+                 const char platform_msg[] = "${PLAT_MSG}";' | \
+@@ -91,6 +98,11 @@ ${BINARY}: ${OBJECTS} Makefile
+ 	@echo "  HOSTCC  $<"
+ 	${Q}${HOSTCC} -c ${HOSTCCFLAGS} ${INC_DIR} $< -o $@
+ 
++--openssl:
++ifeq ($(DEBUG),1)
++	@echo "Selected OpenSSL version: ${OPENSSL_CURRENT_VER}"
++endif
++
+ clean:
+ 	$(call SHELL_DELETE_ALL, src/build_msg.o ${OBJECTS})
+ 
+diff --git a/tools/cert_create/include/cert.h b/tools/cert_create/include/cert.h
+index e63b4740a..5d39a885a 100644
+--- a/tools/cert_create/include/cert.h
++++ b/tools/cert_create/include/cert.h
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2015-2021, ARM Limited and Contributors. All rights reserved.
++ * Copyright (c) 2015-2022, ARM Limited and Contributors. All rights reserved.
+  *
+  * SPDX-License-Identifier: BSD-3-Clause
+  */
+@@ -54,6 +54,7 @@ int cert_new(
+ 	int days,
+ 	int ca,
+ 	STACK_OF(X509_EXTENSION) * sk);
++void cert_cleanup(void);
+ 
+ /* Macro to register the certificates used in the CoT */
+ #define REGISTER_COT(_certs) \
+diff --git a/tools/cert_create/include/ext.h b/tools/cert_create/include/ext.h
+index e900a6dc4..0e7f3be94 100644
+--- a/tools/cert_create/include/ext.h
++++ b/tools/cert_create/include/ext.h
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2015-2021, ARM Limited and Contributors. All rights reserved.
++ * Copyright (c) 2015-2022, ARM Limited and Contributors. All rights reserved.
+  *
+  * SPDX-License-Identifier: BSD-3-Clause
+  */
+@@ -72,6 +72,7 @@ X509_EXTENSION *ext_new_hash(int nid, int crit, const EVP_MD *md,
+ 		unsigned char *buf, size_t len);
+ X509_EXTENSION *ext_new_nvcounter(int nid, int crit, int value);
+ X509_EXTENSION *ext_new_key(int nid, int crit, EVP_PKEY *k);
++void ext_cleanup(void);
+ 
+ /* Macro to register the extensions used in the CoT */
+ #define REGISTER_EXTENSIONS(_ext) \
+diff --git a/tools/cert_create/include/key.h b/tools/cert_create/include/key.h
+index 128e7f7b4..0ef046bee 100644
+--- a/tools/cert_create/include/key.h
++++ b/tools/cert_create/include/key.h
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2015-2021, ARM Limited and Contributors. All rights reserved.
++ * Copyright (c) 2015-2022, Arm Limited and Contributors. All rights reserved.
+  *
+  * SPDX-License-Identifier: BSD-3-Clause
+  */
+@@ -66,10 +66,13 @@ typedef struct key_s {
+ /* Exported API */
+ int key_init(void);
+ key_t *key_get_by_opt(const char *opt);
++#if !USING_OPENSSL3
+ int key_new(key_t *key);
++#endif
+ int key_create(key_t *key, int type, int key_bits);
+ int key_load(key_t *key, unsigned int *err_code);
+ int key_store(key_t *key);
++void key_cleanup(void);
+ 
+ /* Macro to register the keys used in the CoT */
+ #define REGISTER_KEYS(_keys) \
+diff --git a/tools/cert_create/src/cert.c b/tools/cert_create/src/cert.c
+index 67ae1d6ee..2513213a6 100644
+--- a/tools/cert_create/src/cert.c
++++ b/tools/cert_create/src/cert.c
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2015-2022, ARM Limited and Contributors. All rights reserved.
++ * Copyright (c) 2015-2022, Arm Limited and Contributors. All rights reserved.
+  *
+  * SPDX-License-Identifier: BSD-3-Clause
+  */
+@@ -39,7 +39,11 @@ int rand_serial(BIGNUM *b, ASN1_INTEGER *ai)
+ 	if (!btmp)
+ 		return 0;
+ 
++#if USING_OPENSSL3
+ 	if (!BN_rand(btmp, SERIAL_RAND_BITS, 0, 0))
++#else
++	if (!BN_pseudo_rand(btmp, SERIAL_RAND_BITS, 0, 0))
++#endif
+ 		goto error;
+ 	if (ai && !BN_to_ASN1_INTEGER(btmp, ai))
+ 		goto error;
+@@ -272,3 +276,19 @@ cert_t *cert_get_by_opt(const char *opt)
+ 
+ 	return NULL;
+ }
++
++void cert_cleanup(void)
++{
++	unsigned int i;
++
++	for (i = 0; i < num_certs; i++) {
++		if (certs[i].fn != NULL) {
++			void *ptr = (void *)certs[i].fn;
++
++			certs[i].fn = NULL;
++			free(ptr);
++		}
++	}
++	free(certs);
++}
++
+diff --git a/tools/cert_create/src/ext.c b/tools/cert_create/src/ext.c
+index 28821238f..acf57a476 100644
+--- a/tools/cert_create/src/ext.c
++++ b/tools/cert_create/src/ext.c
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2015-2021, ARM Limited and Contributors. All rights reserved.
++ * Copyright (c) 2015-2022, ARM Limited and Contributors. All rights reserved.
+  *
+  * SPDX-License-Identifier: BSD-3-Clause
+  */
+@@ -315,3 +315,20 @@ ext_t *ext_get_by_opt(const char *opt)
+ 
+ 	return NULL;
+ }
++
++void ext_cleanup(void)
++{
++	unsigned int i;
++
++	for (i = 0; i < num_extensions; i++) {
++		if (extensions[i].arg != NULL) {
++			void *ptr = (void *)extensions[i].arg;
++
++			extensions[i].arg = NULL;
++			free(ptr);
++		}
++	}
++	free(extensions);
++	X509V3_EXT_cleanup();
++}
++
+diff --git a/tools/cert_create/src/key.c b/tools/cert_create/src/key.c
+index 2857a3b07..0061b8a1c 100644
+--- a/tools/cert_create/src/key.c
++++ b/tools/cert_create/src/key.c
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2015-2022, ARM Limited and Contributors. All rights reserved.
++ * Copyright (c) 2015-2022, Arm Limited and Contributors. All rights reserved.
+  *
+  * SPDX-License-Identifier: BSD-3-Clause
+  */
+@@ -24,6 +24,7 @@
+ key_t *keys;
+ unsigned int num_keys;
+ 
++#if !USING_OPENSSL3
+ /*
+  * Create a new key container
+  */
+@@ -37,9 +38,11 @@ int key_new(key_t *key)
+ 
+ 	return 1;
+ }
++#endif
+ 
+ static int key_create_rsa(key_t *key, int key_bits)
+ {
++#if USING_OPENSSL3
+ 	EVP_PKEY *rsa = EVP_RSA_gen(key_bits);
+ 	if (rsa == NULL) {
+ 		printf("Cannot generate RSA key\n");
+@@ -47,11 +50,52 @@ static int key_create_rsa(key_t *key, int key_bits)
+ 	}
+ 	key->key = rsa;
+ 	return 1;
++#else
++	BIGNUM *e;
++	RSA *rsa = NULL;
++
++	e = BN_new();
++	if (e == NULL) {
++		printf("Cannot create RSA exponent\n");
++		return 0;
++	}
++
++	if (!BN_set_word(e, RSA_F4)) {
++		printf("Cannot assign RSA exponent\n");
++		goto err2;
++	}
++
++	rsa = RSA_new();
++	if (rsa == NULL) {
++		printf("Cannot create RSA key\n");
++		goto err2;
++	}
++
++	if (!RSA_generate_key_ex(rsa, key_bits, e, NULL)) {
++		printf("Cannot generate RSA key\n");
++		goto err;
++	}
++
++	if (!EVP_PKEY_assign_RSA(key->key, rsa)) {
++		printf("Cannot assign RSA key\n");
++		goto err;
++	}
++
++	BN_free(e);
++	return 1;
++
++err:
++	RSA_free(rsa);
++err2:
++	BN_free(e);
++	return 0;
++#endif
+ }
+ 
+ #ifndef OPENSSL_NO_EC
+ static int key_create_ecdsa(key_t *key, int key_bits)
+ {
++#if USING_OPENSSL3
+ 	EVP_PKEY *ec = EVP_EC_gen("prime256v1");
+ 	if (ec == NULL) {
+ 		printf("Cannot generate EC key\n");
+@@ -59,6 +103,31 @@ static int key_create_ecdsa(key_t *key, int key_bits)
+ 	}
+ 	key->key = ec;
+ 	return 1;
++#else
++	EC_KEY *ec;
++
++	ec = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1);
++	if (ec == NULL) {
++		printf("Cannot create EC key\n");
++		return 0;
++	}
++	if (!EC_KEY_generate_key(ec)) {
++		printf("Cannot generate EC key\n");
++		goto err;
++	}
++	EC_KEY_set_flags(ec, EC_PKEY_NO_PARAMETERS);
++	EC_KEY_set_asn1_flag(ec, OPENSSL_EC_NAMED_CURVE);
++	if (!EVP_PKEY_assign_EC_KEY(key->key, ec)) {
++		printf("Cannot assign EC key\n");
++		goto err;
++	}
++
++	return 1;
++
++err:
++	EC_KEY_free(ec);
++	return 0;
++#endif
+ }
+ #endif /* OPENSSL_NO_EC */
+ 
+@@ -194,3 +263,20 @@ key_t *key_get_by_opt(const char *opt)
+ 
+ 	return NULL;
+ }
++
++void key_cleanup(void)
++{
++	unsigned int i;
++
++	for (i = 0; i < num_keys; i++) {
++		EVP_PKEY_free(keys[i].key);
++		if (keys[i].fn != NULL) {
++			void *ptr = keys[i].fn;
++
++			free(ptr);
++			keys[i].fn = NULL;
++		}
++	}
++	free(keys);
++}
++
+diff --git a/tools/cert_create/src/main.c b/tools/cert_create/src/main.c
+index b39378ca9..fe386b7c5 100644
+--- a/tools/cert_create/src/main.c
++++ b/tools/cert_create/src/main.c
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2015-2021, ARM Limited and Contributors. All rights reserved.
++ * Copyright (c) 2015-2022, Arm Limited and Contributors. All rights reserved.
+  *
+  * SPDX-License-Identifier: BSD-3-Clause
+  */
+@@ -430,10 +430,12 @@ int main(int argc, char *argv[])
+ 
+ 	/* Load private keys from files (or generate new ones) */
+ 	for (i = 0 ; i < num_keys ; i++) {
++#if !USING_OPENSSL3
+ 		if (!key_new(&keys[i])) {
+ 			ERROR("Failed to allocate key container\n");
+ 			exit(1);
+ 		}
++#endif
+ 
+ 		/* First try to load the key from disk */
+ 		if (key_load(&keys[i], &err_code)) {
+@@ -594,9 +596,7 @@ int main(int argc, char *argv[])
+ 	/* If we got here, then we must have filled the key array completely.
+ 	 * We can then safely call free on all of the keys in the array
+ 	 */
+-	for (i = 0; i < num_keys; i++) {
+-		EVP_PKEY_free(keys[i].key);
+-	}
++	key_cleanup();
+ 
+ #ifndef OPENSSL_NO_ENGINE
+ 	ENGINE_cleanup();
+@@ -605,30 +605,10 @@ int main(int argc, char *argv[])
+ 
+ 
+ 	/* We allocated strings through strdup, so now we have to free them */
+-	for (i = 0; i < num_keys; i++) {
+-		if (keys[i].fn != NULL) {
+-			void *ptr = keys[i].fn;
+-
+-			keys[i].fn = NULL;
+-			free(ptr);
+-		}
+-	}
+-	for (i = 0; i < num_extensions; i++) {
+-		if (extensions[i].arg != NULL) {
+-			void *ptr = (void *)extensions[i].arg;
+ 
+-			extensions[i].arg = NULL;
+-			free(ptr);
+-		}
+-	}
+-	for (i = 0; i < num_certs; i++) {
+-		if (certs[i].fn != NULL) {
+-			void *ptr = (void *)certs[i].fn;
++	ext_cleanup();
+ 
+-			certs[i].fn = NULL;
+-			free(ptr);
+-		}
+-	}
++	cert_cleanup();
+ 
+ 	return 0;
+ }
+diff --git a/tools/cert_create/src/sha.c b/tools/cert_create/src/sha.c
+index 06ef3601b..bb750d4e3 100644
+--- a/tools/cert_create/src/sha.c
++++ b/tools/cert_create/src/sha.c
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2015-2022, ARM Limited and Contributors. All rights reserved.
++ * Copyright (c) 2015-2022, Arm Limited and Contributors. All rights reserved.
+  *
+  * SPDX-License-Identifier: BSD-3-Clause
+  */
+@@ -7,11 +7,16 @@
+ #include <stdio.h>
+ #include "debug.h"
+ #include "key.h"
++#if USING_OPENSSL3
+ #include <openssl/evp.h>
+ #include <openssl/obj_mac.h>
++#else
++#include <openssl/sha.h>
++#endif
+ 
+ #define BUFFER_SIZE	256
+ 
++#if USING_OPENSSL3
+ static int get_algorithm_nid(int hash_alg)
+ {
+ 	int nids[] = {NID_sha256, NID_sha384, NID_sha512};
+@@ -20,16 +25,22 @@ static int get_algorithm_nid(int hash_alg)
+ 	}
+ 	return nids[hash_alg];
+ }
++#endif
+ 
+ int sha_file(int md_alg, const char *filename, unsigned char *md)
+ {
+ 	FILE *inFile;
++	int bytes;
++	unsigned char data[BUFFER_SIZE];
++#if USING_OPENSSL3
+ 	EVP_MD_CTX *mdctx;
+ 	const EVP_MD *md_type;
+-	int bytes;
+ 	int alg_nid;
+ 	unsigned int total_bytes;
+-	unsigned char data[BUFFER_SIZE];
++#else
++	SHA256_CTX shaContext;
++	SHA512_CTX sha512Context;
++#endif
+ 
+ 	if ((filename == NULL) || (md == NULL)) {
+ 		ERROR("%s(): NULL argument\n", __func__);
+@@ -42,6 +53,8 @@ int sha_file(int md_alg, const char *filename, unsigned char *md)
+ 		return 0;
+ 	}
+ 
++#if USING_OPENSSL3
++
+ 	mdctx = EVP_MD_CTX_new();
+ 	if (mdctx == NULL) {
+ 		fclose(inFile);
+@@ -74,5 +87,32 @@ err:
+ 	fclose(inFile);
+ 	EVP_MD_CTX_free(mdctx);
+ 	return 0;
++
++#else
++
++	if (md_alg == HASH_ALG_SHA384) {
++		SHA384_Init(&sha512Context);
++		while ((bytes = fread(data, 1, BUFFER_SIZE, inFile)) != 0) {
++			SHA384_Update(&sha512Context, data, bytes);
++		}
++		SHA384_Final(md, &sha512Context);
++	} else if (md_alg == HASH_ALG_SHA512) {
++		SHA512_Init(&sha512Context);
++		while ((bytes = fread(data, 1, BUFFER_SIZE, inFile)) != 0) {
++			SHA512_Update(&sha512Context, data, bytes);
++		}
++		SHA512_Final(md, &sha512Context);
++	} else {
++		SHA256_Init(&shaContext);
++		while ((bytes = fread(data, 1, BUFFER_SIZE, inFile)) != 0) {
++			SHA256_Update(&shaContext, data, bytes);
++		}
++		SHA256_Final(md, &shaContext);
++	}
++
++	fclose(inFile);
++	return 1;
++
++#endif
+ }
+ 
+diff --git a/tools/encrypt_fw/Makefile b/tools/encrypt_fw/Makefile
+index 60bd8ea74..2939b142b 100644
+--- a/tools/encrypt_fw/Makefile
++++ b/tools/encrypt_fw/Makefile
+@@ -11,15 +11,21 @@ ENCTOOL		?= encrypt_fw${BIN_EXT}
+ BINARY		:= $(notdir ${ENCTOOL})
+ OPENSSL_DIR	:= /usr
+ 
++
++MAKE_HELPERS_DIRECTORY := ../../make_helpers/
++include ${MAKE_HELPERS_DIRECTORY}build_macros.mk
++include ${MAKE_HELPERS_DIRECTORY}build_env.mk
++include ${MAKE_HELPERS_DIRECTORY}defaults.mk
++
+ OBJECTS := src/encrypt.o \
+            src/cmd_opt.o \
+            src/main.o
+ 
+ HOSTCCFLAGS := -Wall -std=c99
+ 
+-MAKE_HELPERS_DIRECTORY := ../../make_helpers/
+-include ${MAKE_HELPERS_DIRECTORY}build_macros.mk
+-include ${MAKE_HELPERS_DIRECTORY}build_env.mk
++# Select OpenSSL version flag according to the OpenSSL build selected
++# from setting the OPENSSL_DIR path.
++$(eval $(call SELECT_OPENSSL_API_VERSION))
+ 
+ ifeq (${DEBUG},1)
+   HOSTCCFLAGS += -g -O0 -DDEBUG -DLOG_LEVEL=40
+@@ -36,6 +42,12 @@ else
+   Q :=
+ endif
+ 
++HOSTCCFLAGS += ${DEFINES}
++# USING_OPENSSL3 flag will be added to the HOSTCCFLAGS variable with the proper
++# computed value.
++HOSTCCFLAGS += -DUSING_OPENSSL3=$(USING_OPENSSL3)
++
++
+ # Make soft links and include from local directory otherwise wrong headers
+ # could get pulled in from firmware tree.
+ INC_DIR := -I ./include -I ../../include/tools_share -I ${OPENSSL_DIR}/include
+@@ -51,11 +63,11 @@ LIB := -lssl -lcrypto
+ 
+ HOSTCC ?= gcc
+ 
+-.PHONY: all clean realclean
++.PHONY: all clean realclean --openssl
+ 
+ all: ${BINARY}
+ 
+-${BINARY}: ${OBJECTS} Makefile
++${BINARY}: --openssl ${OBJECTS} Makefile
+ 	@echo "  HOSTLD  $@"
+ 	@echo 'const char build_msg[] = "Built : "__TIME__", "__DATE__;' | \
+                 ${HOSTCC} -c ${HOSTCCFLAGS} -xc - -o src/build_msg.o
+@@ -65,6 +77,11 @@ ${BINARY}: ${OBJECTS} Makefile
+ 	@echo "  HOSTCC  $<"
+ 	${Q}${HOSTCC} -c ${HOSTCCFLAGS} ${INC_DIR} $< -o $@
+ 
++--openssl:
++ifeq ($(DEBUG),1)
++	@echo "Selected OpenSSL version: ${OPENSSL_CURRENT_VER}"
++endif
++
+ clean:
+ 	$(call SHELL_DELETE_ALL, src/build_msg.o ${OBJECTS})
+ 
+diff --git a/tools/fiptool/Makefile b/tools/fiptool/Makefile
+index e6aeba95b..d7e0fe5be 100644
+--- a/tools/fiptool/Makefile
++++ b/tools/fiptool/Makefile
+@@ -1,5 +1,5 @@
+ #
+-# Copyright (c) 2014-2022, ARM Limited and Contributors. All rights reserved.
++# Copyright (c) 2014-2022, Arm Limited and Contributors. All rights reserved.
+ #
+ # SPDX-License-Identifier: BSD-3-Clause
+ #
+@@ -7,6 +7,7 @@
+ MAKE_HELPERS_DIRECTORY := ../../make_helpers/
+ include ${MAKE_HELPERS_DIRECTORY}build_macros.mk
+ include ${MAKE_HELPERS_DIRECTORY}build_env.mk
++include ${MAKE_HELPERS_DIRECTORY}defaults.mk
+ 
+ FIPTOOL ?= fiptool${BIN_EXT}
+ PROJECT := $(notdir ${FIPTOOL})
+@@ -23,6 +24,15 @@ else
+   HOSTCCFLAGS += -O2
+ endif
+ 
++# Select OpenSSL version flag according to the OpenSSL build selected
++# from setting the OPENSSL_DIR path.
++$(eval $(call SELECT_OPENSSL_API_VERSION))
++
++HOSTCCFLAGS += ${DEFINES}
++# USING_OPENSSL3 flag will be added to the HOSTCCFLAGS variable with the proper
++# computed value.
++HOSTCCFLAGS += -DUSING_OPENSSL3=$(USING_OPENSSL3)
++
+ # Include library directories where OpenSSL library files are located.
+ # For a normal installation (i.e.: when ${OPENSSL_DIR} = /usr or
+ # /usr/local), binaries are located under the ${OPENSSL_DIR}/lib/
+@@ -51,11 +61,11 @@ ifneq (,$(wildcard ${PLAT_FIPTOOL_HELPER_MK}))
+ include ${PLAT_FIPTOOL_HELPER_MK}
+ endif
+ 
+-.PHONY: all clean distclean
++.PHONY: all clean distclean --openssl
+ 
+ all: ${PROJECT}
+ 
+-${PROJECT}: ${OBJECTS} Makefile
++${PROJECT}: --openssl ${OBJECTS} Makefile
+ 	@echo "  HOSTLD  $@"
+ 	${Q}${HOSTCC} ${OBJECTS} -o $@ ${LDLIBS}
+ 	@${ECHO_BLANK_LINE}
+@@ -66,5 +76,11 @@ ${PROJECT}: ${OBJECTS} Makefile
+ 	@echo "  HOSTCC  $<"
+ 	${Q}${HOSTCC} -c ${CPPFLAGS} ${HOSTCCFLAGS} ${INCLUDE_PATHS} $< -o $@
+ 
++--openssl:
++ifeq ($(DEBUG),1)
++	@echo "Selected OpenSSL version: ${OPENSSL_CURRENT_VER}"
++endif
++
++
+ clean:
+ 	$(call SHELL_DELETE_ALL, ${PROJECT} ${OBJECTS})
+-- 
+2.40.0
+

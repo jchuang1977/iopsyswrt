@@ -8,9 +8,9 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=arm-trusted-firmware-tools
-PKG_VERSION:=2.4
+PKG_VERSION:=2.7
 PKG_RELEASE:=1
-PKG_HASH:=bf3eb3617a74cddd7fb0e0eacbfe38c3258ee07d4c8ed730deef7a175cc3d55b
+PKG_HASH:=53422dc649153838e03820330ba17cb10afe3e330ecde0db11e4d5f1361a33e6
 
 PKG_MAINTAINER:=Daniel Golle <daniel@makrotopia.org>
 PKG_HOST_ONLY:=1
@@ -35,7 +35,7 @@ define Host/Compile
 		CPPFLAGS="$(HOST_CFLAGS)" \
 		LDFLAGS="$(HOST_LDFLAGS)"
 	$(MAKE) -C \
-		$(HOST_BUILD_DIR)/tools/sptool \
+		$(HOST_BUILD_DIR)/tools/cert_create \
 		CPPFLAGS="$(HOST_CFLAGS)" \
 		LDFLAGS="$(HOST_LDFLAGS)"
 endef
@@ -43,14 +43,14 @@ endef
 define Host/Install
 	$(INSTALL_DIR) $(STAGING_DIR_HOST)/bin/
 	$(INSTALL_BIN) $(HOST_BUILD_DIR)/tools/fiptool/fiptool $(STAGING_DIR_HOST)/bin/
-	$(INSTALL_BIN) $(HOST_BUILD_DIR)/tools/sptool/sptool $(STAGING_DIR_HOST)/bin/
-	$(INSTALL_BIN) $(HOST_BUILD_DIR)/tools/sptool/sp_mk_generator.py $(STAGING_DIR_HOST)/bin/
+	$(INSTALL_BIN) $(HOST_BUILD_DIR)/tools/sptool/sptool.py $(STAGING_DIR_HOST)/bin/
+	$(INSTALL_BIN) $(HOST_BUILD_DIR)/tools/cert_create/cert_create $(STAGING_DIR_HOST)/bin/
 endef
 
 define Host/Clean
 	rm -f $(STAGING_DIR_HOST)/bin/fiptool
-	rm -f $(STAGING_DIR_HOST)/bin/sptool
-	rm -f $(STAGING_DIR_HOST)/bin/sp_mk_generator.py
+	rm -f $(STAGING_DIR_HOST)/bin/sptool.py $(STAGING_DIR_HOST)/bin/sptool
+	rm -f $(STAGING_DIR_HOST)/bin/cert_create
 endef
 
 $(eval $(call BuildPackage,arm-trusted-firmware-tools))

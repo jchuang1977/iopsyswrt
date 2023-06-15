@@ -1,0 +1,143 @@
+From 8caf10acab37be292a2fab0da01c1ba284a3b40a Mon Sep 17 00:00:00 2001
+From: Juan Pablo Conde <juanpablo.conde@arm.com>
+Date: Tue, 28 Jun 2022 16:56:32 -0400
+Subject: [PATCH] docs(security): update info on use of OpenSSL 3.0
+
+OpenSSL 3.0 is a pre-requisite since v2.7 and can be installed
+on the operating system by updating the previous version.
+However, this may not be convenient for everyone, as some may
+want to keep their previous versions of OpenSSL.
+
+This update on the docs shows that there is an alternative to
+install OpenSSL on the system by using a local build of
+OpenSSL 3.0 and pointing both the build and run commands to
+that build.
+
+Signed-off-by: Juan Pablo Conde <juanpablo.conde@arm.com>
+Change-Id: Ib9ad9ee5c333f7b04e2747ae02433aa66e6397f3
+---
+ docs/design/trusted-board-boot-build.rst | 13 ++++++++++---
+ docs/getting_started/build-options.rst   |  7 ++++---
+ docs/getting_started/prerequisites.rst   |  8 +++++++-
+ docs/getting_started/tools-build.rst     | 12 +++++++++++-
+ 4 files changed, 32 insertions(+), 8 deletions(-)
+
+diff --git a/docs/design/trusted-board-boot-build.rst b/docs/design/trusted-board-boot-build.rst
+index dd61b61f5..c3f3a2f53 100644
+--- a/docs/design/trusted-board-boot-build.rst
++++ b/docs/design/trusted-board-boot-build.rst
+@@ -35,6 +35,13 @@ images with support for these features:
+    By default, this will use the Chain of Trust described in the TBBR-client
+    document. To select a different one, use the ``COT`` build option.
+ 
++   If using a custom build of OpenSSL, set the ``OPENSSL_DIR`` variable
++   accordingly so it points at the OpenSSL installation path, as explained in
++   :ref:`Build Options`. In addition, set the ``LD_LIBRARY_PATH`` variable
++   when running to point at the custom OpenSSL path, so the OpenSSL libraries
++   are loaded from that path instead of the default OS path. Export this
++   variable if necessary.
++
+    In the case of Arm platforms, the location of the ROTPK hash must also be
+    specified at build time. The following locations are currently supported (see
+    ``ARM_ROTPK_LOCATION`` build option):
+@@ -63,7 +70,7 @@ images with support for these features:
+        make PLAT=<platform> TRUSTED_BOARD_BOOT=1 GENERATE_COT=1        \
+        ARM_ROTPK_LOCATION=devel_rsa                                    \
+        ROT_KEY=plat/arm/board/common/rotpk/arm_rotprivk_rsa.pem        \
+-       BL33=<path-to>/<bl33_image>                                     \
++       BL33=<path-to>/<bl33_image> OPENSSL_DIR=<path-to>/<openssl>     \
+        all fip
+ 
+    The result of this build will be the bl1.bin and the fip.bin binaries. This
+@@ -87,7 +94,7 @@ images with support for these features:
+        make PLAT=juno TRUSTED_BOARD_BOOT=1 GENERATE_COT=1              \
+        ARM_ROTPK_LOCATION=devel_rsa                                    \
+        ROT_KEY=plat/arm/board/common/rotpk/arm_rotprivk_rsa.pem        \
+-       BL33=<path-to>/<bl33_image>                                     \
++       BL33=<path-to>/<bl33_image> OPENSSL_DIR=<path-to>/<openssl>     \
+        SCP_BL2=<path-to>/<scp_bl2_image>                               \
+        SCP_BL2U=<path-to>/<scp_bl2u_image>                             \
+        NS_BL2U=<path-to>/<ns_bl2u_image>                               \
+@@ -109,7 +116,7 @@ images with support for these features:
+ 
+ --------------
+ 
+-*Copyright (c) 2019-2020, Arm Limited. All rights reserved.*
++*Copyright (c) 2019-2022, Arm Limited. All rights reserved.*
+ 
+ .. _mbed TLS Repository: https://github.com/ARMmbed/mbedtls.git
+ .. _mbed TLS Security Center: https://tls.mbed.org/security
+diff --git a/docs/getting_started/build-options.rst b/docs/getting_started/build-options.rst
+index 26d545805..b291d626b 100644
+--- a/docs/getting_started/build-options.rst
++++ b/docs/getting_started/build-options.rst
+@@ -974,9 +974,10 @@ Common build options
+   bit, to trap access to the RAS ERR and RAS ERX registers from lower ELs.
+   This flag is disabled by default.
+ 
+-- ``OPENSSL_DIR``: This flag is used to provide the installed openssl directory
+-  path on the host machine which is used to build certificate generation and
+-  firmware encryption tool.
++- ``OPENSSL_DIR``: This option is used to provide the path to a directory on the
++  host machine where a custom installation of OpenSSL is located, which is used
++  to build the certificate generation, firmware encryption and FIP tools. If
++  this option is not set, the default OS installation will be used.
+ 
+ - ``USE_SP804_TIMER``: Use the SP804 timer instead of the Generic Timer for
+   functions that wait for an arbitrary time length (udelay and mdelay). The
+diff --git a/docs/getting_started/prerequisites.rst b/docs/getting_started/prerequisites.rst
+index 0b8a71cbc..5d575d87c 100644
+--- a/docs/getting_started/prerequisites.rst
++++ b/docs/getting_started/prerequisites.rst
+@@ -57,6 +57,12 @@ supporting tools:
+ 
+    Required to build the cert_create tool.
+ 
++   .. note::
++
++    OpenSSL 3.0 has to be built from source code, as it's not available in
++    the default package repositories in recent Ubuntu versions. Please refer
++    to the OpenSSL project documentation for more information.
++
+ The following libraries are required for Trusted Board Boot and Measured Boot
+ support:
+ 
+@@ -89,7 +95,7 @@ required packages with the following command:
+ 
+ .. code:: shell
+ 
+-    sudo apt install build-essential git libssl-dev
++    sudo apt install build-essential git
+ 
+ The optional packages can be installed using:
+ 
+diff --git a/docs/getting_started/tools-build.rst b/docs/getting_started/tools-build.rst
+index c050f5851..daf7e06a9 100644
+--- a/docs/getting_started/tools-build.rst
++++ b/docs/getting_started/tools-build.rst
+@@ -1,6 +1,16 @@
+ Building Supporting Tools
+ =========================
+ 
++.. note::
++
++    OpenSSL 3.0 is needed in order to build the tools. A custom installation
++    can be used if not updating the OpenSSL version on the OS. In order to do
++    this, use the ``OPENSSL_DIR`` variable after the ``make`` command to
++    indicate the location of the custom OpenSSL build. Then, to run the tools,
++    use the ``LD_LIBRARY_PATH`` to indicate the location of the built
++    libraries. More info about ``OPENSSL_DIR`` can be found at
++    :ref:`Build Options`.
++
+ Building and using the FIP tool
+ -------------------------------
+ 
+@@ -164,4 +174,4 @@ via using ``cat <filename>`` instead of a hex string.
+ 
+ --------------
+ 
+-*Copyright (c) 2019, Arm Limited. All rights reserved.*
++*Copyright (c) 2019-2022, Arm Limited. All rights reserved.*
+-- 
+2.40.0
+
