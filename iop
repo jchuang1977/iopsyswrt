@@ -68,6 +68,7 @@ git
 automake
 gtk-doc-tools
 jq
+libelf-dev
 liblzo2-dev
 libncurses5
 libncurses5-dev
