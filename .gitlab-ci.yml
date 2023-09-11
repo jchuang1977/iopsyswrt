@@ -64,13 +64,21 @@ code-analysis:
     SKIP_TEST: "true"
 
 # Continuous Builds:
-# Broadcom
-SMARTHUB3_continuous:
+# Qualcomm
+SH40J_continuous:
   extends:
     - .continuous
     - .variables_eval
   variables:
-    BOARD_NAME: "SMARTHUB3"
+    BOARD_NAME: "SH40J"
+
+# Broadcom
+SH31B_continuous:
+  extends:
+    - .continuous
+    - .variables_eval
+  variables:
+    BOARD_NAME: "SH31B"
 
 # Airoha
 TAPIR_continuous:
